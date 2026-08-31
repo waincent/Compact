@@ -179,7 +179,7 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
                   <TableRow
                     key={c.id}
                     onClick={() => router.push(`/contracts/${c.id}`)}
-                    className="h-[50px] cursor-pointer transition-colors hover:bg-slate-50"
+                    className="h-14 cursor-pointer transition-colors hover:bg-slate-50"
                   >
                     <TableCell className="font-mono text-xs text-slate-500">{c.code}</TableCell>
                     <TableCell className="font-medium">{c.name}</TableCell>

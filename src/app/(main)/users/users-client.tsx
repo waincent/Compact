@@ -95,7 +95,7 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
         {loading ? (
           <div className="space-y-3 p-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-[50px] w-full" />
+              <Skeleton key={i} className="h-14 w-full" />
             ))}
           </div>
         ) : list.length === 0 ? (
@@ -118,7 +118,7 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
                 <TableRow
                   key={u.id}
                   onClick={() => setDetailId(u.id)}
-                  className="h-[50px] cursor-pointer transition-colors hover:bg-slate-50"
+                  className="h-14 cursor-pointer transition-colors hover:bg-slate-50"
                 >
                   <TableCell className="font-medium">{u.username}</TableCell>
                   <TableCell>{u.name}</TableCell>

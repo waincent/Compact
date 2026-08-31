@@ -124,7 +124,7 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
         {loading ? (
           <div className="space-y-3 p-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-[50px] w-full" />
+              <Skeleton key={i} className="h-14 w-full" />
             ))}
           </div>
         ) : list.length === 0 ? (
@@ -145,7 +145,7 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
                 <TableRow
                   key={p.id}
                   onClick={() => router.push(`/projects/${p.id}`)}
-                  className="h-[50px] cursor-pointer transition-colors hover:bg-slate-50"
+                  className="h-14 cursor-pointer transition-colors hover:bg-slate-50"
                 >
                   <TableCell className="font-mono text-xs text-slate-500">{p.code}</TableCell>
                   <TableCell>
