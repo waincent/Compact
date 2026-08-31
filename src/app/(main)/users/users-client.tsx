@@ -118,7 +118,7 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
                 <TableRow
                   key={u.id}
                   onClick={() => setDetailId(u.id)}
-                  className="cursor-pointer transition-colors hover:bg-slate-50"
+                  className="h-12 cursor-pointer transition-colors hover:bg-slate-50"
                 >
                   <TableCell className="font-medium">{u.username}</TableCell>
                   <TableCell>{u.name}</TableCell>

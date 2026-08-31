@@ -145,7 +145,7 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
                 <TableRow
                   key={p.id}
                   onClick={() => router.push(`/projects/${p.id}`)}
-                  className="cursor-pointer transition-colors hover:bg-slate-50"
+                  className="h-12 cursor-pointer transition-colors hover:bg-slate-50"
                 >
                   <TableCell className="font-mono text-xs text-slate-500">{p.code}</TableCell>
                   <TableCell>
