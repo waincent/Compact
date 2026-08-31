@@ -126,7 +126,7 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
           <Info label="项目编号" value={project.code} />
           {project.description && (
             <div>
-              <p className="text-xs text-slate-400">项目描述</p>
+              <p className="text-xs text-slate-500">项目描述</p>
               <p className="mt-1 text-slate-600">{project.description}</p>
             </div>
           )}
@@ -233,14 +233,14 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-slate-400">{label}</p>
+      <p className="text-xs text-slate-500">{label}</p>
       <p className={cn('mt-0.5 text-slate-700')}>{value}</p>
     </div>
   )
 }
 
 const summaryTones: Record<string, string> = {
-  default: 'border-white/30 bg-white/40 text-slate-800',
+  default: 'border-glass-hairline bg-white/40 text-slate-800',
   sales: 'border-green-100 bg-green-50/60 text-green-600',
   purchase: 'border-amber-100 bg-amber-50/60 text-amber-600',
 }
@@ -248,7 +248,7 @@ const summaryTones: Record<string, string> = {
 function SummaryItem({ label, value, tone = 'default' }: { label: string; value: number; tone?: 'sales' | 'purchase' | 'default' }) {
   return (
     <div className={`rounded-lg border px-4 py-3 ${summaryTones[tone]}`}>
-      <p className="text-xs text-slate-400">{label}</p>
+      <p className="text-xs text-slate-500">{label}</p>
       <p className="mt-1 text-lg font-semibold tabular-nums">¥{formatMoney(value)}</p>
     </div>
   )

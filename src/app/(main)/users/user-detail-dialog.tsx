@@ -174,7 +174,7 @@ export function UserDetailDialog({ userId, open, onOpenChange, onEdit, onChanged
 function Info({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p className="text-xs text-slate-400">{label}</p>
+      <p className="text-xs text-slate-500">{label}</p>
       <p className={cn('mt-0.5 text-slate-700', mono && 'font-mono text-xs')}>{value}</p>
     </div>
   )

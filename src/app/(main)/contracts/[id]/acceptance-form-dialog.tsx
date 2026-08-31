@@ -111,13 +111,13 @@ export function AcceptanceFormDialog({ open, onOpenChange, onSaved, contractId }
               }}
             />
             {acceptFile ? (
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-white/40 bg-white/40 px-3 py-2">
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-glass-border bg-white/40 px-3 py-2">
                 <span className="flex min-w-0 items-center gap-2 text-sm text-slate-600">
-                  <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                  <FileText className="h-4 w-4 shrink-0 text-slate-500" />
                   <span className="truncate">{acceptFile.name}</span>
-                  <span className="shrink-0 text-xs text-slate-400">{(acceptFile.size / 1024).toFixed(0)} KB</span>
+                  <span className="shrink-0 text-xs text-slate-500">{(acceptFile.size / 1024).toFixed(0)} KB</span>
                 </span>
-                <Button type="button" variant="ghost" size="sm" className="h-7 w-7 shrink-0 px-0 text-slate-400" onClick={() => setAcceptFile(null)}>
+                <Button type="button" variant="ghost" size="sm" className="h-7 w-7 shrink-0 px-0 text-slate-500" onClick={() => setAcceptFile(null)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>

@@ -12,10 +12,10 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/50">
-        <Inbox className="h-7 w-7 text-slate-400" />
+        <Inbox className="h-7 w-7 text-slate-500" />
       </div>
       <p className="text-sm font-medium text-slate-600">{title}</p>
-      <p className="text-xs text-slate-400">{description}</p>
+      <p className="text-xs text-slate-500">{description}</p>
     </div>
   )
 }

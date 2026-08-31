@@ -157,7 +157,7 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
               <Label>
                 所属合同 <span className="text-red-500">*</span>
               </Label>
-              <div className="rounded-lg border border-white/40 bg-white/40 px-3 py-2 text-sm text-slate-600">
+              <div className="rounded-lg border border-glass-border bg-white/40 px-3 py-2 text-sm text-slate-600">
                 {selectedContract ? `${selectedContract.code} · ${selectedContract.name}` : `合同 #${contractId}`}
               </div>
             </div>
@@ -264,13 +264,13 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
               }}
             />
             {invoiceFile ? (
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-white/40 bg-white/40 px-3 py-2">
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-glass-border bg-white/40 px-3 py-2">
                 <span className="flex min-w-0 items-center gap-2 text-sm text-slate-600">
-                  <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                  <FileText className="h-4 w-4 shrink-0 text-slate-500" />
                   <span className="truncate">{invoiceFile.name}</span>
-                  <span className="shrink-0 text-xs text-slate-400">{(invoiceFile.size / 1024).toFixed(0)} KB</span>
+                  <span className="shrink-0 text-xs text-slate-500">{(invoiceFile.size / 1024).toFixed(0)} KB</span>
                 </span>
-                <Button type="button" variant="ghost" size="sm" className="h-7 w-7 shrink-0 px-0 text-slate-400" onClick={() => setInvoiceFile(null)}>
+                <Button type="button" variant="ghost" size="sm" className="h-7 w-7 shrink-0 px-0 text-slate-500" onClick={() => setInvoiceFile(null)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>

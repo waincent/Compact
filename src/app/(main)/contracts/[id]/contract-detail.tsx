@@ -245,7 +245,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
   const total = d.stats.total
 
   const progressItem = (label: string, percent: number, amount: number, stroke: string, text: string) => (
-    <div className="flex items-center gap-4 rounded-xl border border-white/30 bg-white/40 p-4">
+    <div className="flex items-center gap-4 rounded-xl border border-glass-hairline bg-white/40 p-4">
       <ProgressRing percent={percent} stroke={stroke} text={text} />
       <div className="min-w-0">
         <p className="text-sm font-medium text-slate-800">{label}</p>
@@ -264,7 +264,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
           <ArrowLeft className="h-4 w-4" /> 返回项目
         </Link>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-xs text-slate-400">{d.code}</span>
+          <span className="font-mono text-xs text-slate-500">{d.code}</span>
           {canManage && (
             <>
               <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
@@ -376,7 +376,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                             <span className="truncate">{p.voucherName}</span>
                           </Button>
                         ) : (
-                          <span className="text-slate-400">-</span>
+                          <span className="text-slate-500">-</span>
                         )}
                       </TableCell>
                       {canManagePayment && (
@@ -430,7 +430,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                             <span className="truncate">{a.attachment.originalName}</span>
                           </Button>
                         ) : (
-                          <span className="text-slate-400">-</span>
+                          <span className="text-slate-500">-</span>
                         )}
                       </TableCell>
                       <TableCell className="text-slate-500">{a.createdByName ?? '-'}</TableCell>
@@ -485,7 +485,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                   {contractFiles.map((f) => (
                     <TableRow key={f.id} className="h-14">
                       <TableCell className="flex max-w-[300px] items-center gap-2 font-medium">
-                        <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                        <FileText className="h-4 w-4 shrink-0 text-slate-500" />
                         <span className="truncate">{f.originalName}</span>
                       </TableCell>
                       <TableCell className="text-slate-500">{formatBytes(f.fileSize)}</TableCell>
@@ -622,7 +622,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
 function InfoItem({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div>
-      <p className="text-xs text-slate-400">{label}</p>
+      <p className="text-xs text-slate-500">{label}</p>
       <p className={cn('mt-0.5', highlight ? 'text-base font-semibold text-primary' : 'text-slate-700')}>{value}</p>
     </div>
   )
@@ -708,7 +708,7 @@ function InvoiceTable({ rows, canManage, onDelete }: {
                     <span className="truncate">{inv.fileAttachment.originalName}</span>
                   </Button>
                 ) : (
-                  <span className="text-slate-400">-</span>
+                  <span className="text-slate-500">-</span>
                 )}
               </TableCell>
               {canManage && (

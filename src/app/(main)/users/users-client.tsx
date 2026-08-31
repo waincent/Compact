@@ -70,7 +70,7 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
             className="w-64 pl-8"
             placeholder="搜索用户名 / 姓名"

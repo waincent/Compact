@@ -37,7 +37,7 @@ const ROLE_LABEL: Record<number, { label: string; className: string }> = {
   1: { label: '超级管理员', className: 'bg-red-50 text-red-600 border-red-200' },
   2: { label: '管理员', className: 'bg-orange-50 text-orange-600 border-orange-200' },
   3: { label: '财务', className: 'bg-blue-50 text-blue-600 border-blue-200' },
-  4: { label: '普通成员', className: 'bg-white/50 text-slate-600 border-white/40' },
+  4: { label: '普通成员', className: 'bg-white/60 text-slate-600 border-glass-border-strong' },
 }
 
 interface CompanyOption {
@@ -91,7 +91,7 @@ export function Topbar({ user }: { user: TopbarUser }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/40 bg-white/50 px-4 backdrop-blur-xl md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-glass-hairline bg-white/55 px-4 backdrop-blur-xl md:px-6">
       <div className="flex items-center gap-1 text-sm">
         <span className="font-medium text-slate-900">{title || '首页'}</span>
       </div>
@@ -104,9 +104,9 @@ export function Topbar({ user }: { user: TopbarUser }) {
             disabled={!isSuperAdmin}
           >
             <SelectTrigger
-              className="w-fit min-w-52 max-w-72 border-white/40 bg-white/60 px-3 text-slate-700 backdrop-blur data-[size=default]:h-9 hover:bg-white/70 data-placeholder:text-slate-400"
+              className="w-fit min-w-52 max-w-72 border-glass-border-strong bg-white/60 px-3 text-slate-700 backdrop-blur data-[size=default]:h-9 hover:bg-white/75 data-placeholder:text-slate-500"
             >
-              <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
+              <Building2 className="h-4 w-4 shrink-0 text-slate-500" />
               <SelectValue
                 placeholder={isSuperAdmin ? '全部公司' : companies[0]?.name ?? '公司'}
               />
@@ -127,9 +127,9 @@ export function Topbar({ user }: { user: TopbarUser }) {
         )}
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-full px-1.5 py-1 transition-colors hover:bg-white/60">
-            <Avatar className="h-8 w-8 bg-primary text-white">
-              <AvatarFallback className="bg-primary text-xs text-white">
+          <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-full px-1.5 py-1 transition-colors hover:bg-white/70">
+            <Avatar className="h-8 w-8 text-white">
+              <AvatarFallback className="bg-gradient-to-br from-[#5e5ce6] to-[#0a84ff] text-xs text-white shadow-[0_2px_8px_rgba(10,132,255,0.35)]">
                 {user.name.slice(0, 1)}
               </AvatarFallback>
             </Avatar>
@@ -144,7 +144,7 @@ export function Topbar({ user }: { user: TopbarUser }) {
             <DropdownMenuGroup>
               <DropdownMenuLabel>
                 <div className="text-sm font-medium">{user.name}</div>
-                <div className="text-xs text-slate-400">@{user.username}</div>
+                <div className="text-xs text-slate-500">@{user.username}</div>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

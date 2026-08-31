@@ -56,6 +56,11 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Liquid Glass 描边色板(苹果清爽白):
+     玻璃面板边缘用浅灰描边替代白描边,面板才有清晰边界 */
+  --color-glass-border: rgba(15, 23, 42, 0.08);
+  --color-glass-border-strong: rgba(15, 23, 42, 0.14);
+  --color-glass-hairline: rgba(15, 23, 42, 0.06);
 }
 
 @layer base {
@@ -64,11 +69,12 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Liquid Glass:柔和蓝紫粉渐变背景(固定,滚动时玻璃有稳定内容可模糊) */
+    /* 苹果清爽白:冷蓝白基底(替代纯白避免灰白)+ 蓝紫粉柔和光斑,亮而有氛围 */
+    background-color: #eef2fe;
     background-image:
-      radial-gradient(1200px 800px at 0% -10%, rgba(59, 130, 246, 0.22), transparent 60%),
-      radial-gradient(1000px 700px at 100% 0%, rgba(168, 85, 247, 0.18), transparent 55%),
-      radial-gradient(900px 650px at 50% 110%, rgba(244, 114, 182, 0.16), transparent 60%);
+      radial-gradient(1100px 750px at 10% -8%, rgba(125, 165, 255, 0.32), transparent 58%),
+      radial-gradient(950px 680px at 100% -4%, rgba(165, 145, 255, 0.25), transparent 56%),
+      radial-gradient(1050px 720px at 50% 115%, rgba(255, 155, 208, 0.22), transparent 60%);
     background-attachment: fixed;
   }
   html {
@@ -77,38 +83,38 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.546 0.216 262.881); /* #2563EB */
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.94 0.05 262.881);
-  --accent-foreground: oklch(0.4 0.16 262.881);
-  --destructive: oklch(0.577 0.245 27.325); /* #DC2626 */
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.6 0.19 262.881);
-  --chart-1: oklch(0.546 0.216 262.881); /* #2563EB */
-  --chart-2: oklch(0.696 0.17 162.48);   /* #16A34A */
-  --chart-3: oklch(0.769 0.188 70.08);   /* #F59E0B */
-  --chart-4: oklch(0.577 0.245 27.325);  /* #DC2626 */
-  --chart-5: oklch(0.45 0.12 310);       /* 紫 */
+  --background: #eef2fe;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #0a84ff; /* 苹果蓝 */
+  --primary-foreground: #ffffff;
+  --secondary: #f0f4ff;
+  --secondary-foreground: #111827;
+  --muted: #f0f4ff;
+  --muted-foreground: #6b7280;
+  --accent: #eaf1ff;
+  --accent-foreground: #0a84ff;
+  --destructive: #ff3b30; /* 苹果红 */
+  --border: rgba(15, 23, 42, 0.1);
+  --input: rgba(15, 23, 42, 0.14);
+  --ring: #0a84ff;
+  --chart-1: #0a84ff;  /* 苹果蓝 */
+  --chart-2: #34c759;  /* 苹果绿 */
+  --chart-3: #ff9500;  /* 苹果橙 */
+  --chart-4: #ff3b30;  /* 苹果红 */
+  --chart-5: #af52de;  /* 苹果紫 */
   --radius: 0.75rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.546 0.216 262.881);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.94 0.05 262.881);
-  --sidebar-accent-foreground: oklch(0.4 0.16 262.881);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.6 0.19 262.881);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #0a84ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eaf1ff;
+  --sidebar-accent-foreground: #0a84ff;
+  --sidebar-border: rgba(15, 23, 42, 0.08);
+  --sidebar-ring: #0a84ff;
 }
 
 .dark {

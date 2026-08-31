@@ -15,7 +15,7 @@ import { api } from '@/lib/api-client'
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex flex-1 items-center justify-center text-sm text-slate-400">加载中…</div>}>
+    <Suspense fallback={<div className="flex flex-1 items-center justify-center text-sm text-slate-500">加载中…</div>}>
       <LoginContent />
     </Suspense>
   )
@@ -93,7 +93,7 @@ function LoginContent() {
     <div className="flex flex-1 items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-blue-200">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#5e5ce6] to-[#0a84ff] text-white shadow-[0_4px_16px_rgba(10,132,255,0.4)]">
             <ShieldCheck className="h-7 w-7" />
           </div>
           <div className="text-center">
@@ -102,7 +102,7 @@ function LoginContent() {
           </div>
         </div>
 
-        <div className="rounded-2xl border-white/40 bg-white/60 p-6 shadow-xl backdrop-blur-xl">
+        <div className="rounded-2xl border-glass-border bg-white/65 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_30px_rgba(15,23,42,0.1)] backdrop-blur-xl">
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
             <div className="space-y-1.5">
               <Label htmlFor="account">账号</Label>
@@ -113,10 +113,10 @@ function LoginContent() {
               >
                 <SelectTrigger
                   id="account"
-                  className="w-full rounded-lg px-3 text-slate-900 data-[size=default]:h-11 data-placeholder:text-slate-400"
+                  className="w-full rounded-lg px-3 text-slate-900 data-[size=default]:h-11 data-placeholder:text-slate-500"
                 >
                   {selectedUser && (
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-white">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#5e5ce6] to-[#0a84ff] text-[11px] font-semibold text-white">
                       {selectedUser.name.slice(0, 1)}
                     </span>
                   )}
@@ -135,15 +135,15 @@ function LoginContent() {
                       <span
                         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
                           username === u.username
-                            ? 'bg-primary text-white'
-                            : 'bg-white/50 text-slate-600'
+                            ? 'bg-gradient-to-br from-[#5e5ce6] to-[#0a84ff] text-white'
+                            : 'bg-white/60 text-slate-600'
                         }`}
                       >
                         {u.name.slice(0, 1)}
                       </span>
                       <span className="flex min-w-0 flex-col">
                         <span className="text-sm font-medium text-slate-900">{u.name}</span>
-                        <span className="truncate text-xs text-slate-400">
+                        <span className="truncate text-xs text-slate-500">
                           @{u.username}
                           {u.companyName ? ` · ${u.companyName}` : ''}
                         </span>
@@ -173,7 +173,7 @@ function LoginContent() {
                 <button
                   type="button"
                   onClick={() => setShowPwd((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-600"
                   aria-label={showPwd ? '隐藏密码' : '显示密码'}
                   disabled={!username}
                 >

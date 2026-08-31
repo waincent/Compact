@@ -40,7 +40,7 @@ function StatCard({
         <div>
           <p className="text-sm text-slate-500">{title}</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">{value}</p>
-          {sub && <p className="mt-1 text-xs text-slate-400">{sub}</p>}
+          {sub && <p className="mt-1 text-xs text-slate-500">{sub}</p>}
         </div>
         <div className={cn('flex h-11 w-11 items-center justify-center rounded-lg', iconClass)}>
           <Icon className="h-5 w-5" />

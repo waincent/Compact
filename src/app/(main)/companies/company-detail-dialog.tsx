@@ -12,7 +12,7 @@ import type { Company } from '@/types/company'
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex gap-3 text-sm">
-      <span className="w-20 shrink-0 text-slate-400">{label}</span>
+      <span className="w-20 shrink-0 text-slate-500">{label}</span>
       <span className="min-w-0 flex-1 break-words text-slate-700">{value ?? '-'}</span>
     </div>
   )
@@ -44,7 +44,7 @@ export function CompanyDetailDialog({
           <DialogDescription>公司档案详情</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2.5 rounded-lg border border-white/30 p-4">
+        <div className="space-y-2.5 rounded-lg border border-glass-hairline p-4">
           <InfoRow label="社会信用代码" value={company.creditCode} />
           <InfoRow label="公司地址" value={company.address} />
           <InfoRow label="公司电话" value={company.phone} />
