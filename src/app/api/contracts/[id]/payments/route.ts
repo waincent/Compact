@@ -41,7 +41,6 @@ export const GET = withApi(async (_req, ctx) => {
     /** 收款/付款由合同类型推导:销售=收款、采购=付款 */
     contractType: contract.contractType,
     amount: Number(p.amount),
-    status: p.status,
     recordDate: p.recordDate,
     version: p.version,
     createdByName: p.creator?.name,

@@ -69,18 +69,18 @@ async function main() {
   console.log('合同: 8个(到期 3/7/15/30/45 天)')
 
   // 6. 资金记录(收款/付款由合同类型推导:销售合同=收款、采购合同=付款)
-  const pay1 = await prisma.paymentRecord.create({ data: { contractId: c1.id, amount: 300000, status: 1, recordDate: d(-90), createdBy: admin.id } })
-  const pay2 = await prisma.paymentRecord.create({ data: { contractId: c1.id, amount: 200000, status: 2, recordDate: d(-60), createdBy: admin.id } })
-  const pay3 = await prisma.paymentRecord.create({ data: { contractId: c1.id, amount: 400000, status: 2, recordDate: d(-30), createdBy: admin.id } })
-  await prisma.paymentRecord.create({ data: { contractId: c2.id, amount: 200000, status: 2, recordDate: d(-90), createdBy: admin.id } })
-  await prisma.paymentRecord.create({ data: { contractId: c2.id, amount: 100000, status: 1, recordDate: d(-20), createdBy: admin.id } })
-  await prisma.paymentRecord.create({ data: { contractId: c3.id, amount: 300000, status: 2, recordDate: d(-80), createdBy: admin.id } })
-  await prisma.paymentRecord.create({ data: { contractId: c3.id, amount: 200000, status: 2, recordDate: d(-40), createdBy: admin.id } })
-  await prisma.paymentRecord.create({ data: { contractId: c4.id, amount: 100000, status: 2, recordDate: d(-200), createdBy: admin.id } })
-  await prisma.paymentRecord.create({ data: { contractId: c4.id, amount: 100000, status: 1, recordDate: d(-30), createdBy: admin.id } })
-  await prisma.paymentRecord.create({ data: { contractId: c6.id, amount: 100000, status: 2, recordDate: d(-60), createdBy: admin.id } })
-  await prisma.paymentRecord.create({ data: { contractId: c8.id, amount: 250000, status: 2, recordDate: d(-10), createdBy: admin.id } })
-  console.log('资金记录: 11笔(含 待确认 3笔)')
+  const pay1 = await prisma.paymentRecord.create({ data: { contractId: c1.id, amount: 300000, recordDate: d(-90), createdBy: admin.id } })
+  const pay2 = await prisma.paymentRecord.create({ data: { contractId: c1.id, amount: 200000, recordDate: d(-60), createdBy: admin.id } })
+  const pay3 = await prisma.paymentRecord.create({ data: { contractId: c1.id, amount: 400000, recordDate: d(-30), createdBy: admin.id } })
+  await prisma.paymentRecord.create({ data: { contractId: c2.id, amount: 200000, recordDate: d(-90), createdBy: admin.id } })
+  await prisma.paymentRecord.create({ data: { contractId: c2.id, amount: 100000, recordDate: d(-20), createdBy: admin.id } })
+  await prisma.paymentRecord.create({ data: { contractId: c3.id, amount: 300000, recordDate: d(-80), createdBy: admin.id } })
+  await prisma.paymentRecord.create({ data: { contractId: c3.id, amount: 200000, recordDate: d(-40), createdBy: admin.id } })
+  await prisma.paymentRecord.create({ data: { contractId: c4.id, amount: 100000, recordDate: d(-200), createdBy: admin.id } })
+  await prisma.paymentRecord.create({ data: { contractId: c4.id, amount: 100000, recordDate: d(-30), createdBy: admin.id } })
+  await prisma.paymentRecord.create({ data: { contractId: c6.id, amount: 100000, recordDate: d(-60), createdBy: admin.id } })
+  await prisma.paymentRecord.create({ data: { contractId: c8.id, amount: 250000, recordDate: d(-10), createdBy: admin.id } })
+  console.log('资金记录: 11笔')
 
   // 7. 发票(销项/进项)
   const inv1 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000001', amount: 200000, taxRate: 13, taxAmount: 26000, totalAmountWithTax: 226000, issueDate: d(-58), status: 1, createdBy: admin.id } })
@@ -97,7 +97,6 @@ async function main() {
     { type: 'company_status', items: [['1', '正常'], ['0', '停用']] },
     { type: 'project_status', items: [['1', '进行中'], ['2', '结项']] },
     { type: 'contract_type', items: [['1', '销售'], ['2', '采购']] },
-    { type: 'payment_status', items: [['1', '待确认'], ['2', '已完成'], ['3', '已作废']] },
     { type: 'invoice_status', items: [['1', '已开票']] },
     { type: 'user_role', items: [['1', '超级管理员'], ['2', '管理员'], ['3', '财务'], ['4', '普通成员']] },
     { type: 'user_status', items: [['1', '启用'], ['0', '停用']] },

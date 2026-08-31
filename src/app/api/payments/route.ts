@@ -11,13 +11,12 @@ import { toNumber, assertContractAmount } from '@/lib/money'
 const listSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.coerce.number().int().min(1).max(3).optional(),
   contractId: z.coerce.number().int().optional(),
   keyword: z.string().optional(),
 })
 
 const paymentListSelect = {
-  id: true, contractId: true, amount: true, status: true,
+  id: true, contractId: true, amount: true,
   recordDate: true, version: true, createdAt: true, voucherAttachmentId: true,
   contract: {
     select: { id: true, code: true, name: true, totalAmount: true, contractType: true },
@@ -30,13 +29,12 @@ export const GET = withApi(async (req) => {
   const { companyId } = await resolveCompanyContext(user)
   const url = new URL(req.url)
   const params = listSchema.safeParse(Object.fromEntries(url.searchParams))
-  const { page, pageSize, status, contractId, keyword } = params.success
+  const { page, pageSize, contractId, keyword } = params.success
     ? params.data
-    : { page: 1, pageSize: 20, status: undefined, contractId: undefined, keyword: undefined }
+    : { page: 1, pageSize: 20, contractId: undefined, keyword: undefined }
 
   const where: Prisma.PaymentRecordWhereInput = { isDeleted: false }
   const companyWhere = companyContractWhere(companyId)
-  if (status) where.status = status
   if (contractId) where.contractId = contractId
   if (keyword) {
     where.contract = { ...companyWhere, name: { contains: keyword, mode: 'insensitive' } }
@@ -65,7 +63,6 @@ export const GET = withApi(async (req) => {
       /** 收款/付款由合同类型推导:销售=收款、采购=付款 */
       contractType: p.contract.contractType,
       amount: Number(p.amount),
-      status: p.status,
       recordDate: p.recordDate,
       version: p.version,
       createdByName: p.creator?.name,
@@ -97,9 +94,9 @@ export const POST = withApi(async (req) => {
   // 收款/付款由合同类型推导:销售=收款、采购=付款(合同下方向必然一致,累计不再区分)
   const derivedDirection = contract.contractType
 
-  // 合同累计资金(排除作废)+ 本次 ≤ 合同总额
+  // 合同累计资金 + 本次 ≤ 合同总额
   const agg = await prisma.paymentRecord.aggregate({
-    where: { contractId: contract.id, isDeleted: false, status: { not: 3 } },
+    where: { contractId: contract.id, isDeleted: false },
     _sum: { amount: true },
   })
   const sameDirectionSum = toNumber(agg._sum.amount)
@@ -110,7 +107,6 @@ export const POST = withApi(async (req) => {
       data: {
         contractId: contract.id,
         amount,
-        status: 2, // 直接计入完成(不再有待确认流程)
         recordDate: new Date(data.recordDate),
         voucherAttachmentId: data.voucherAttachmentId ?? null,
         createdBy: user.id,
@@ -128,5 +124,5 @@ export const POST = withApi(async (req) => {
   })
 
   await writeOpLog({ userId: user.id, module: 'payment', action: 'CREATE', businessType: 'payment', businessId: payment.id, detailJson: { contractId: contract.id, derivedDirection, amount } })
-  return ok({ id: payment.id, status: payment.status })
+  return ok({ id: payment.id })
 })

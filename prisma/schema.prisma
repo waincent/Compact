@@ -136,7 +136,6 @@ model PaymentRecord {
   id                  Int       @id @default(autoincrement())
   contractId          Int       @map("contract_id")
   amount              Decimal   @db.Decimal(18, 2)
-  status              Int       @default(1)
   recordDate          DateTime  @map("record_date") @db.Date
   voucherAttachmentId Int?      @map("voucher_attachment_id")
   version             Int       @default(0)
@@ -149,7 +148,7 @@ model PaymentRecord {
   contract Contract        @relation(fields: [contractId], references: [id])
   creator  User?           @relation("PaymentCreator", fields: [createdBy], references: [id])
 
-  @@index([isDeleted, status])
+  @@index([isDeleted])
   @@map("payment_record")
 }
 

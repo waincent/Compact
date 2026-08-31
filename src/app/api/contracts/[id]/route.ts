@@ -20,7 +20,7 @@ const detailSelect = {
   creator: { select: { id: true, name: true, username: true } },
   _count: {
     select: {
-      payments: { where: { isDeleted: false, status: { in: [1, 2] } } },
+      payments: { where: { isDeleted: false } },
       invoices: { where: { isDeleted: false } },
     },
   },
@@ -30,7 +30,7 @@ const detailSelect = {
 async function contractStats(contractId: number, contractType: number) {
   const [payments, invoices] = await Promise.all([
     prisma.paymentRecord.findMany({
-      where: { contractId, isDeleted: false, status: { in: [1, 2] } },
+      where: { contractId, isDeleted: false },
       select: { amount: true },
     }),
     prisma.invoice.findMany({
@@ -109,7 +109,7 @@ export const PUT = withApi(async (req, ctx) => {
   if (data.totalAmount !== undefined) {
     const [payments, invoices] = await Promise.all([
       prisma.paymentRecord.findMany({
-        where: { contractId, isDeleted: false, status: { in: [1, 2] } },
+        where: { contractId, isDeleted: false },
         select: { amount: true },
       }),
       prisma.invoice.findMany({
