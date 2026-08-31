@@ -30,10 +30,9 @@ interface ContractOpt {
 
 const schema = z.object({
   contractId: z.string().min(1, '请选择合同'),
-  invoiceCode: z.string().max(30).optional(),
   invoiceNumber: z.string().min(1, '请输入发票号码'),
   totalAmountWithTax: z.string().refine((v) => v !== '' && Number(v) > 0, '含税金额需大于 0'),
-  taxRate: z.string().refine((v) => v !== '' && Number(v) >= 0 && Number(v) <= 100, '税率需在 0-100 之间'),
+  taxRate: z.string().refine((v) => ['6', '9', '13'].includes(v), '税率需为 6%/9%/13%'),
   issueDate: z.string().min(1, '请选择开票日期'),
 })
 
@@ -57,8 +56,7 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      contractId: '', invoiceCode: '',
-      invoiceNumber: '', totalAmountWithTax: '', taxRate: '13', issueDate: today(),
+      contractId: '', invoiceNumber: '', totalAmountWithTax: '', taxRate: '13', issueDate: today(),
     },
   })
 
@@ -77,7 +75,6 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
     setInvoiceFile(null)
     form.reset({
       contractId: contractId ? String(contractId) : '',
-      invoiceCode: '',
       invoiceNumber: '', totalAmountWithTax: '', taxRate: '13', issueDate: today(),
     })
   }, [open, contractId, form])
@@ -115,7 +112,6 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
     try {
       const created = await api.post<{ id: number }>('/api/invoices', {
         contractId: contractId ?? Number(values.contractId),
-        invoiceCode: values.invoiceCode?.trim() || null,
         invoiceNumber: values.invoiceNumber.trim(),
         totalAmountWithTax: Number(values.totalAmountWithTax),
         taxRate: Number(values.taxRate),
@@ -196,20 +192,24 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
             </p>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="invoiceCode">发票代码</Label>
-              <Input id="invoiceCode" placeholder="可选" {...form.register('invoiceCode')} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="invoiceNumber">
-                发票号码 <span className="text-red-500">*</span>
-              </Label>
-              <Input id="invoiceNumber" placeholder="如 TESTINV202608001" {...form.register('invoiceNumber')} />
-              {form.formState.errors.invoiceNumber && (
-                <p className="text-xs text-red-500">{form.formState.errors.invoiceNumber.message}</p>
-              )}
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="issueDate">
+              开票日期 <span className="text-red-500">*</span>
+            </Label>
+            <Input id="issueDate" type="date" {...form.register('issueDate')} />
+            {form.formState.errors.issueDate && (
+              <p className="text-xs text-red-500">{form.formState.errors.issueDate.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="invoiceNumber">
+              发票号码 <span className="text-red-500">*</span>
+            </Label>
+            <Input id="invoiceNumber" placeholder="如 TESTINV202608001" {...form.register('invoiceNumber')} />
+            {form.formState.errors.invoiceNumber && (
+              <p className="text-xs text-red-500">{form.formState.errors.invoiceNumber.message}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -223,10 +223,23 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
               )}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="taxRate">
+              <Label>
                 税率(%) <span className="text-red-500">*</span>
               </Label>
-              <Input id="taxRate" type="number" step="0.1" min="0" max="100" {...form.register('taxRate')} />
+              <Select
+                value={form.watch('taxRate') ?? '13'}
+                onValueChange={(v) => form.setValue('taxRate', v ?? '13', { shouldValidate: true })}
+              >
+                <SelectTrigger><SelectValue placeholder="选择税率" /></SelectTrigger>
+                <SelectContent>
+                  {['6', '9', '13'].map((r) => (
+                    <SelectItem key={r} value={r}>{r}%</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.taxRate && (
+                <p className="text-xs text-red-500">{form.formState.errors.taxRate.message}</p>
+              )}
             </div>
           </div>
 
@@ -236,16 +249,6 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
               <span className="font-semibold tabular-nums text-slate-900">¥{formatMoney(tax)}</span>
             </div>
           )}
-
-          <div className="space-y-1.5">
-            <Label htmlFor="issueDate">
-              开票日期 <span className="text-red-500">*</span>
-            </Label>
-            <Input id="issueDate" type="date" {...form.register('issueDate')} />
-            {form.formState.errors.issueDate && (
-              <p className="text-xs text-red-500">{form.formState.errors.issueDate.message}</p>
-            )}
-          </div>
 
           <div className="space-y-1.5">
             <Label>发票文件</Label>
