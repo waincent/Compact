@@ -369,7 +369,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                       </TableCell>
                       <TableCell>
                         {p.voucherId ? (
-                          <Button variant="ghost" size="sm" className="h-8 max-w-[200px] px-2 text-slate-600" render={
+                          <Button nativeButton={false} variant="ghost" size="sm" className="h-8 max-w-[200px] px-2 text-slate-600" render={
                             <a href={`/api/files/${p.voucherId}`} target="_blank" rel="noreferrer" />
                           }>
                             <ImageIcon className="h-3.5 w-3.5 shrink-0" />
@@ -423,7 +423,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                       <TableCell className="font-medium">{toDateStr(a.acceptDate)}</TableCell>
                       <TableCell>
                         {a.attachment ? (
-                          <Button variant="ghost" size="sm" className="h-8 max-w-[240px] px-2 text-slate-600" render={
+                          <Button nativeButton={false} variant="ghost" size="sm" className="h-8 max-w-[240px] px-2 text-slate-600" render={
                             <a href={`/api/files/${a.attachment.id}`} target="_blank" rel="noreferrer" />
                           }>
                             <FileText className="h-3.5 w-3.5 shrink-0" />
@@ -492,7 +492,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                       <TableCell className="text-slate-500">{f.createdByName ?? '-'}</TableCell>
                       <TableCell className="text-slate-500">{toDateStr(f.createdAt)}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="h-8 px-2" render={
+                        <Button nativeButton={false} variant="ghost" size="sm" className="h-8 px-2" render={
                           <a href={`/api/files/${f.id}`} target="_blank" rel="noreferrer" />
                         }>
                           <Download className="h-3.5 w-3.5" /> 下载
@@ -701,7 +701,7 @@ function InvoiceTable({ rows, canManage, onDelete }: {
               <TableCell className="tabular-nums">¥{formatMoney(inv.taxAmount)}</TableCell>
               <TableCell>
                 {inv.fileAttachment ? (
-                  <Button variant="ghost" size="sm" className="h-8 max-w-[220px] px-2 text-slate-600" render={
+                  <Button nativeButton={false} variant="ghost" size="sm" className="h-8 max-w-[220px] px-2 text-slate-600" render={
                     <a href={`/api/files/${inv.fileAttachment.id}`} target="_blank" rel="noreferrer" />
                   }>
                     <FileText className="h-3.5 w-3.5 shrink-0" />
