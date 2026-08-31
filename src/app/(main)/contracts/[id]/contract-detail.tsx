@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, Trash2, FileText, Plus, CheckCircle2, Ban, Wallet, Pencil, FileCheck2,
+  ScrollText, Upload, Download, Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -63,6 +64,14 @@ interface AcceptanceRow {
   createdByName?: string
   attachment?: { id: number; originalName: string; fileSize: number; mimeType: string } | null
 }
+interface ContractFileRow {
+  id: number
+  originalName: string
+  fileSize: number
+  mimeType: string
+  createdAt: string
+  createdByName?: string
+}
 
 export function ContractDetail({ contractId, companyId, canManage, canUpload, canManagePayment, canManageInvoice }: {
   contractId: number
@@ -89,20 +98,27 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
   const [voiding, setVoiding] = useState<PaymentRow | null>(null)
   const [deleting, setDeleting] = useState<InvoiceRow | null>(null)
   const [deletingAcceptance, setDeletingAcceptance] = useState<AcceptanceRow | null>(null)
+  const [contractFiles, setContractFiles] = useState<ContractFileRow[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [deletingFile, setDeletingFile] = useState<ContractFileRow | null>(null)
+  const [tab, setTab] = useState('invoices')
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const loadAll = useCallback(async () => {
     setLoading(true)
     try {
-      const [d, p, inv, acc] = await Promise.all([
+      const [d, p, inv, acc, files] = await Promise.all([
         api.get<ContractDetail>(`/api/contracts/${contractId}`),
         api.get<PaymentRow[]>(`/api/contracts/${contractId}/payments`),
         api.get<InvoiceRow[]>(`/api/contracts/${contractId}/invoices`),
         api.get<AcceptanceRow[]>(`/api/contracts/${contractId}/acceptances`),
+        api.get<ContractFileRow[]>(`/api/contracts/${contractId}/contract-files`),
       ])
       setDetail(d)
       setPayments(p)
       setInvoices(inv)
       setAcceptances(acc)
+      setContractFiles(files)
     } catch (err) {
       toast.error((err as Error).message)
     } finally {
@@ -136,6 +152,47 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
       await api.del(`/api/acceptances/${deletingAcceptance.id}`)
       toast.success('验收单据已删除')
       setDeletingAcceptance(null)
+      loadAll()
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function onUploadContractFiles(e: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    e.target.value = ''
+    if (!files.length) return
+    setUploading(true)
+    try {
+      for (const file of files) {
+        const form = new FormData()
+        form.append('file', file)
+        const res = await fetch(`/api/upload?businessType=contract&businessId=${contractId}`, {
+          method: 'POST',
+          body: form,
+          cache: 'no-store',
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data?.message ?? '合同原件上传失败')
+      }
+      toast.success(`已上传 ${files.length} 份合同原件`)
+      loadAll()
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function onDeleteContractFile() {
+    if (!deletingFile) return
+    setActionLoading(true)
+    try {
+      await api.del(`/api/files/${deletingFile.id}`)
+      toast.success('合同原件已删除')
+      setDeletingFile(null)
       loadAll()
     } catch (err) {
       toast.error((err as Error).message)
@@ -267,8 +324,8 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         </CardContent>
       </Card>
 
-      {/* 页签:发票记录 / 资金记录 / 验收单据 */}
-      <Tabs defaultValue="invoices">
+      {/* 页签:发票记录 / 资金记录 / 验收单据 / 合同原件 */}
+      <Tabs value={tab} onValueChange={(value) => setTab(String(value))}>
         <TabsList variant="line">
           <TabsTrigger value="invoices" className="gap-1.5 px-3 py-1.5">
             <FileText className="h-4 w-4" /> 发票记录
@@ -278,6 +335,9 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
           </TabsTrigger>
           <TabsTrigger value="acceptances" className="gap-1.5 px-3 py-1.5">
             <FileCheck2 className="h-4 w-4" /> 验收单据
+          </TabsTrigger>
+          <TabsTrigger value="contractFiles" className="gap-1.5 px-3 py-1.5">
+            <ScrollText className="h-4 w-4" /> 合同原件
           </TabsTrigger>
         </TabsList>
 
@@ -410,6 +470,67 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
           )}
         </TabsContent>
 
+        <TabsContent value="contractFiles">
+          <div className="flex items-center justify-between">
+            <div />
+            {canUpload && (
+              <Button size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} 上传合同原件
+              </Button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              accept=".pdf,image/*,.doc,.docx,.xls,.xlsx"
+              onChange={onUploadContractFiles}
+            />
+          </div>
+          {contractFiles.length === 0 ? (
+            <EmptyState title="暂无合同原件" description="点击右上角「上传合同原件」上传合同扫描件、补充协议等文件" />
+          ) : (
+            <Card className="overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>文件名</TableHead>
+                    <TableHead>大小</TableHead>
+                    <TableHead>上传人</TableHead>
+                    <TableHead>上传时间</TableHead>
+                    <TableHead className="text-right">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {contractFiles.map((f) => (
+                    <TableRow key={f.id}>
+                      <TableCell className="flex max-w-[300px] items-center gap-2 font-medium">
+                        <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span className="truncate">{f.originalName}</span>
+                      </TableCell>
+                      <TableCell className="text-slate-500">{formatBytes(f.fileSize)}</TableCell>
+                      <TableCell className="text-slate-500">{f.createdByName ?? '-'}</TableCell>
+                      <TableCell className="text-slate-500">{toDateStr(f.createdAt)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" className="h-8 px-2" render={
+                          <a href={`/api/files/${f.id}`} target="_blank" rel="noreferrer" />
+                        }>
+                          <Download className="h-3.5 w-3.5" /> 下载
+                        </Button>
+                        {canUpload && (
+                          <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600" onClick={() => setDeletingFile(f)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          )}
+        </TabsContent>
+
       </Tabs>
 
       {/* 新增资金 / 发票 */}
@@ -462,7 +583,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="删除合同"
-        description={detail ? `确定删除合同「${detail.name}」吗?该合同下的所有资金记录、发票记录、验收单据与合同附件将被一并删除,且无法恢复。` : ''}
+        description={detail ? `确定删除合同「${detail.name}」吗?该合同下的所有资金记录、发票记录、验收单据与合同原件将被一并删除,且无法恢复。` : ''}
         confirmText="删除"
         variant="danger"
         loading={actionLoading}
@@ -511,6 +632,18 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         loading={actionLoading}
         onConfirm={onDeleteAcceptance}
       />
+
+      {/* 删除合同原件 */}
+      <ConfirmDialog
+        open={Boolean(deletingFile)}
+        onOpenChange={(o) => !o && setDeletingFile(null)}
+        title="删除合同原件"
+        description={deletingFile ? `确定删除合同原件「${deletingFile.originalName}」吗?` : ''}
+        confirmText="删除"
+        variant="danger"
+        loading={actionLoading}
+        onConfirm={onDeleteContractFile}
+      />
     </div>
   )
 }
@@ -522,6 +655,12 @@ function InfoItem({ label, value, highlight }: { label: string; value: string; h
       <p className={cn('mt-0.5', highlight ? 'text-base font-semibold text-primary' : 'text-slate-700')}>{value}</p>
     </div>
   )
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
 function InvoiceTable({ rows, getLabel, canManage, onDelete }: {

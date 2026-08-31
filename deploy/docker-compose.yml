@@ -1,0 +1,51 @@
+# 契通 Compact — Docker Compose 生产部署
+# 用法:
+#   cp .env.example .env   # 填入 JWT_SECRET / DB_PASSWORD
+#   docker compose up -d --build
+# 上传文件通过 bind mount 保存在宿主本地目录(UPLOAD_HOST_DIR),容器销毁不丢。
+name: compact
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-compact}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-compact}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-compact} -d ${DB_NAME:-compact}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks: [compact-net]
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-compact}:${DB_PASSWORD}@db:5432/${DB_NAME:-compact}
+      JWT_SECRET: ${JWT_SECRET}
+      UPLOAD_DIR: /app/uploads
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      # 上传文件落宿主本地磁盘(满足"文件保存在服务器本地")
+      - ${UPLOAD_HOST_DIR:-./uploads}:/app/uploads
+    networks: [compact-net]
+
+volumes:
+  db-data:
+
+networks:
+  compact-net:
+    driver: bridge

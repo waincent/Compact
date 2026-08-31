@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.gitignore
+*.log
+npm-debug.log*
+uploads
+.env
+.env.*
+!.env.example
+docs
+Dockerfile
+deploy

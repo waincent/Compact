@@ -104,7 +104,7 @@ export function Topbar({ user }: { user: TopbarUser }) {
             disabled={!isSuperAdmin}
           >
             <SelectTrigger
-              className="w-fit max-w-48 border-transparent bg-slate-100/80 px-3 text-slate-700 data-[size=default]:h-9 hover:bg-slate-100 data-placeholder:text-slate-400"
+              className="w-fit min-w-52 max-w-72 border-transparent bg-slate-100/80 px-3 text-slate-700 data-[size=default]:h-9 hover:bg-slate-100 data-placeholder:text-slate-400"
             >
               <Building2 className="h-4 w-4 shrink-0 text-slate-400" />
               <SelectValue

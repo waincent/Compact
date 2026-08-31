@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import { requireUser } from '@/lib/auth/session'
+import { requireUser, requireRole } from '@/lib/auth/session'
+import { contractInCompany, ROLE } from '@/lib/auth/authorize'
+import { resolveCompanyContext } from '@/lib/auth/company-context'
 import { withApi, ok } from '@/lib/response'
 import { ApiError } from '@/lib/errors'
 import { saveUpload } from '@/lib/upload'
@@ -80,6 +82,32 @@ export const POST = withApi(async (req) => {
     await prisma.invoice.update({
       where: { id: invoice.id },
       data: { fileAttachmentId: attachment.id, version: { increment: 1 } },
+    })
+    return ok({
+      id: attachment.id,
+      originalName: stored.originalName,
+      fileSize: stored.fileSize,
+      mimeType: stored.mimeType,
+    })
+  }
+
+  // 合同原件:合同级多文件附件(单个合同可多份,不替换旧文件;仅管理员/财务可传)
+  if (parsed.data.businessType === 'contract') {
+    const roleUser = await requireRole([ROLE.SUPER_ADMIN, ROLE.ADMIN, ROLE.FINANCE])
+    const { companyId } = await resolveCompanyContext(roleUser)
+    const contract = await prisma.contract.findFirst({ where: { id: parsed.data.businessId, isDeleted: false } })
+    if (!contract || !contractInCompany(contract, companyId)) throw new ApiError(404, '合同不存在')
+    const attachment = await prisma.attachment.create({
+      data: {
+        businessType: 'contract',
+        businessId: contract.id,
+        fileName: stored.fileName,
+        filePath: stored.filePath,
+        fileSize: stored.fileSize,
+        mimeType: stored.mimeType,
+        originalName: stored.originalName,
+        createdBy: roleUser.id,
+      },
     })
     return ok({
       id: attachment.id,
