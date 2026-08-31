@@ -354,8 +354,8 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>金额</TableHead>
                     <TableHead>发生日期</TableHead>
+                    <TableHead>金额</TableHead>
                     <TableHead>凭证</TableHead>
                     {canManagePayment && <TableHead className="text-right">操作</TableHead>}
                   </TableRow>
@@ -363,10 +363,10 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                 <TableBody>
                   {payments.map((p) => (
                     <TableRow key={p.id}>
+                      <TableCell className="text-slate-500">{toDateStr(p.recordDate)}</TableCell>
                       <TableCell className={cn('font-medium tabular-nums', d.contractType === 1 ? 'text-green-600' : 'text-amber-600')}>
                         {d.contractType === 1 ? '+' : '-'}¥{formatMoney(p.amount)}
                       </TableCell>
-                      <TableCell className="text-slate-500">{toDateStr(p.recordDate)}</TableCell>
                       <TableCell>
                         {p.voucherId ? (
                           <Button variant="ghost" size="sm" className="h-8 max-w-[200px] px-2 text-slate-600" render={
