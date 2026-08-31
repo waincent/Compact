@@ -81,6 +81,7 @@ export const GET = withApi(async (_req, ctx) => {
 
 const updateSchema = z.object({
   name: z.string().min(1, '请输入项目名称').max(200).optional(),
+  code: z.string().min(1, '请输入项目编号').max(30).optional(),
   description: z.string().max(500).optional().nullable(),
   status: z.coerce.number().int().min(1).max(2).optional(),
   startDate: z.string().optional(),
@@ -102,8 +103,18 @@ export const PUT = withApi(async (req, ctx) => {
   if (!existing || !(await projectInCompany(existing.id, companyId))) throw new ApiError(404, '项目不存在')
   assertCanOperateProject(user)
 
+  // 项目编号支持自定义编辑:修改时校验不与其它项目重复
+  if (data.code !== undefined && data.code !== existing.code) {
+    const dup = await prisma.project.findFirst({
+      where: { code: data.code, isDeleted: false, id: { not: projectId } },
+      select: { id: true },
+    })
+    if (dup) throw new ApiError(400, '项目编号已存在')
+  }
+
   const updateData: Record<string, unknown> = {}
   if (data.name !== undefined) updateData.name = data.name
+  if (data.code !== undefined) updateData.code = data.code
   if (data.description !== undefined) updateData.description = data.description || null
   if (data.status !== undefined) updateData.status = data.status
 

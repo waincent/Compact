@@ -33,6 +33,7 @@ interface Project {
 
 const schema = z.object({
   name: z.string().min(1, '请输入项目名称'),
+  code: z.string().min(1, '请输入项目编号').max(30).optional(),
   description: z.string().optional(),
   status: z.string().min(1, '请选择状态'),
   startDate: z.string().min(1, '请选择开始日期'),
@@ -56,7 +57,7 @@ export function ProjectFormDialog({ open, onOpenChange, editing, onSaved }: Prop
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: '', description: '', status: '1', startDate: '', endDate: '',
+      name: '', code: '', description: '', status: '1', startDate: '', endDate: '',
     },
   })
 
@@ -64,6 +65,7 @@ export function ProjectFormDialog({ open, onOpenChange, editing, onSaved }: Prop
     if (open) {
       form.reset({
         name: editing?.name ?? '',
+        code: editing?.code ?? '',
         description: editing?.description ?? '',
         status: String(editing?.status ?? 1),
         startDate: editing ? toDateStr(editing.startDate) : '',
@@ -83,7 +85,11 @@ export function ProjectFormDialog({ open, onOpenChange, editing, onSaved }: Prop
         endDate: values.endDate,
       }
       if (isEdit && editing) {
-        await api.put(`/api/projects/${editing.id}`, { ...payload, version: editing.version })
+        await api.put(`/api/projects/${editing.id}`, {
+          ...payload,
+          code: (values.code ?? '').trim() || editing.code,
+          version: editing.version,
+        })
         toast.success('项目已更新')
       } else {
         await api.post('/api/projects', payload)
@@ -115,6 +121,18 @@ export function ProjectFormDialog({ open, onOpenChange, editing, onSaved }: Prop
               <p className="text-xs text-red-500">{form.formState.errors.name.message}</p>
             )}
           </div>
+
+          {isEdit && (
+            <div className="space-y-1.5">
+              <Label htmlFor="code">
+                项目编号 <span className="text-red-500">*</span>
+              </Label>
+              <Input id="code" {...form.register('code')} placeholder="如 XM-2026-001" />
+              {form.formState.errors.code && (
+                <p className="text-xs text-red-500">{form.formState.errors.code.message}</p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label>
