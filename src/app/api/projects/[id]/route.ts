@@ -45,7 +45,6 @@ async function projectSummary(projectId: number, companyId: number | null) {
     prisma.invoice.findMany({
       where: {
         isDeleted: false,
-        status: 1,
         amount: { gt: 0 },
         contract: { ...contractWhere, isDeleted: false, projectId },
       },

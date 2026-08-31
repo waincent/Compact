@@ -164,7 +164,6 @@ model Invoice {
   totalAmountWithTax Decimal  @default(0) @map("total_amount_with_tax") @db.Decimal(18, 2)
   issueDate          DateTime @map("issue_date") @db.Date
   fileAttachmentId   Int?     @unique @map("file_attachment_id")
-  status             Int      @default(1)
   remark             String?  @db.VarChar(300)
   version            Int      @default(0)
   isDeleted          Boolean  @default(false) @map("is_deleted")
@@ -178,7 +177,7 @@ model Invoice {
   fileAttachment  Attachment? @relation("InvoiceFile", fields: [fileAttachmentId], references: [id])
 
   @@index([contractId])
-  @@index([isDeleted, status])
+  @@index([isDeleted])
   @@map("invoice")
 }
 

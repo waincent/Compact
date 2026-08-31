@@ -34,8 +34,8 @@ async function contractStats(contractId: number, contractType: number) {
       select: { amount: true },
     }),
     prisma.invoice.findMany({
-      where: { contractId, isDeleted: false, status: 1, amount: { gt: 0 } },
-      select: { amount: true, taxAmount: true, totalAmountWithTax: true, status: true },
+      where: { contractId, isDeleted: false, amount: { gt: 0 } },
+      select: { amount: true, taxAmount: true, totalAmountWithTax: true },
     }),
   ])
   const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0)
@@ -113,7 +113,7 @@ export const PUT = withApi(async (req, ctx) => {
         select: { amount: true },
       }),
       prisma.invoice.findMany({
-        where: { contractId, isDeleted: false, status: 1, amount: { gt: 0 } },
+        where: { contractId, isDeleted: false, amount: { gt: 0 } },
         select: { totalAmountWithTax: true },
       }),
     ])

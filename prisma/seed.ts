@@ -83,13 +83,13 @@ async function main() {
   console.log('资金记录: 11笔')
 
   // 7. 发票(销项/进项)
-  const inv1 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000001', amount: 200000, taxRate: 13, taxAmount: 26000, totalAmountWithTax: 226000, issueDate: d(-58), status: 1, createdBy: admin.id } })
-  const inv2 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000002', amount: 400000, taxRate: 13, taxAmount: 52000, totalAmountWithTax: 452000, issueDate: d(-28), status: 1, createdBy: admin.id } })
-  const inv3 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000003', amount: 100000, taxRate: 13, taxAmount: 13000, totalAmountWithTax: 113000, issueDate: d(-10), status: 1, createdBy: admin.id } })
-  const inv4 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000004', amount: 80000, taxRate: 6, taxAmount: 4800, totalAmountWithTax: 84800, issueDate: d(-50), status: 1, createdBy: admin.id } })
-  await prisma.invoice.create({ data: { contractId: c2.id, invoiceCode: '031002600222', invoiceNumber: '031202600000005', amount: 100000, taxRate: 13, taxAmount: 13000, totalAmountWithTax: 113000, issueDate: d(-80), status: 1, createdBy: admin.id } })
-  await prisma.invoice.create({ data: { contractId: c3.id, invoiceCode: '031002600333', invoiceNumber: '031202600000006', amount: 200000, taxRate: 13, taxAmount: 26000, totalAmountWithTax: 226000, issueDate: d(-70), status: 1, createdBy: admin.id } })
-  await prisma.invoice.create({ data: { contractId: c4.id, invoiceCode: '031002600444', invoiceNumber: '031202600000007', amount: 100000, taxRate: 13, taxAmount: 13000, totalAmountWithTax: 113000, issueDate: d(-180), status: 1, createdBy: admin.id } })
+  const inv1 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000001', amount: 200000, taxRate: 13, taxAmount: 26000, totalAmountWithTax: 226000, issueDate: d(-58), createdBy: admin.id } })
+  const inv2 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000002', amount: 400000, taxRate: 13, taxAmount: 52000, totalAmountWithTax: 452000, issueDate: d(-28), createdBy: admin.id } })
+  const inv3 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000003', amount: 100000, taxRate: 13, taxAmount: 13000, totalAmountWithTax: 113000, issueDate: d(-10), createdBy: admin.id } })
+  const inv4 = await prisma.invoice.create({ data: { contractId: c1.id, invoiceCode: '031002600111', invoiceNumber: '031202600000004', amount: 80000, taxRate: 6, taxAmount: 4800, totalAmountWithTax: 84800, issueDate: d(-50), createdBy: admin.id } })
+  await prisma.invoice.create({ data: { contractId: c2.id, invoiceCode: '031002600222', invoiceNumber: '031202600000005', amount: 100000, taxRate: 13, taxAmount: 13000, totalAmountWithTax: 113000, issueDate: d(-80), createdBy: admin.id } })
+  await prisma.invoice.create({ data: { contractId: c3.id, invoiceCode: '031002600333', invoiceNumber: '031202600000006', amount: 200000, taxRate: 13, taxAmount: 26000, totalAmountWithTax: 226000, issueDate: d(-70), createdBy: admin.id } })
+  await prisma.invoice.create({ data: { contractId: c4.id, invoiceCode: '031002600444', invoiceNumber: '031202600000007', amount: 100000, taxRate: 13, taxAmount: 13000, totalAmountWithTax: 113000, issueDate: d(-180), createdBy: admin.id } })
   console.log('发票: 7张(销售合同发票6 + 采购合同发票1)')
 
   // 8. 数据字典
@@ -97,7 +97,6 @@ async function main() {
     { type: 'company_status', items: [['1', '正常'], ['0', '停用']] },
     { type: 'project_status', items: [['1', '进行中'], ['2', '结项']] },
     { type: 'contract_type', items: [['1', '销售'], ['2', '采购']] },
-    { type: 'invoice_status', items: [['1', '已开票']] },
     { type: 'user_role', items: [['1', '超级管理员'], ['2', '管理员'], ['3', '财务'], ['4', '普通成员']] },
     { type: 'user_status', items: [['1', '启用'], ['0', '停用']] },
   ]
@@ -108,7 +107,7 @@ async function main() {
       })),
     })
   }
-  console.log('数据字典: 8 类')
+  console.log('数据字典: 5 类')
 
   // 9. 业务编号序列
   await prisma.sequence.createMany({

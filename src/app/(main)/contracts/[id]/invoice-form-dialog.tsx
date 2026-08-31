@@ -91,13 +91,13 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
     setDirInvoiced(0)
     if (!selectedContractId) return
     api
-      .get<{ list: Array<{ totalAmountWithTax: number; status: number; amount: number }> }>(
+      .get<{ list: Array<{ totalAmountWithTax: number; amount: number }> }>(
         `/api/contracts/${selectedContractId}/invoices`,
       )
       .then((d) => {
         let sum = 0
         for (const inv of d.list) {
-          if (inv.status === 1 && inv.amount > 0) {
+          if (inv.amount > 0) {
             sum = Math.round(sum * 100) / 100 + Math.round(inv.totalAmountWithTax * 100) / 100
           }
         }

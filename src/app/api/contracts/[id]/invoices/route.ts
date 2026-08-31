@@ -35,7 +35,6 @@ export const GET = withApi(async (req, ctx) => {
     taxRate: i.taxRate,
     taxAmount: Number(i.taxAmount),
     totalAmountWithTax: Number(i.totalAmountWithTax),
-    status: i.status,
     issueDate: i.issueDate,
     remark: i.remark,
     version: i.version,

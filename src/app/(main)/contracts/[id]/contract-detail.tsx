@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { StatusBadge } from '@/components/data-table/status-badge'
 import { EmptyState } from '@/components/data-table/empty-state'
 import { ConfirmDialog } from '@/components/data-table/confirm-dialog'
 import { PaymentFormDialog } from './payment-form-dialog'
@@ -53,7 +52,7 @@ interface InvoiceRow {
   id: number
   invoiceCode: string; invoiceNumber: string
   amount: number; taxRate: number; taxAmount: number; totalAmountWithTax: number
-  status: number; issueDate: string
+  issueDate: string
   createdByName?: string
   fileAttachment?: { id: number; originalName: string; fileSize: number; mimeType: string } | null
 }
@@ -82,7 +81,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
   canManageInvoice: boolean
 }) {
   const router = useRouter()
-  const { getLabel } = useDicts(['contract_type', 'invoice_status'])
+  const { getLabel } = useDicts(['contract_type'])
   const [detail, setDetail] = useState<ContractDetail | null>(null)
   const [payments, setPayments] = useState<PaymentRow[]>([])
   const [invoices, setInvoices] = useState<InvoiceRow[]>([])
@@ -334,7 +333,6 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
           </div>
           <InvoiceTable
             rows={invoices}
-            getLabel={getLabel}
             canManage={canManageInvoice}
             onDelete={setDeleting}
           />
@@ -669,9 +667,8 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
-function InvoiceTable({ rows, getLabel, canManage, onDelete }: {
+function InvoiceTable({ rows, canManage, onDelete }: {
   rows: InvoiceRow[]
-  getLabel: (t: string, v: number | string | null | undefined) => string
   canManage: boolean
   onDelete: (inv: InvoiceRow) => void
 }) {
@@ -683,11 +680,10 @@ function InvoiceTable({ rows, getLabel, canManage, onDelete }: {
           <TableRow>
             <TableHead>开票日期</TableHead>
             <TableHead>发票号码</TableHead>
-            <TableHead>不含税金额</TableHead>
+            <TableHead>含税金额</TableHead>
             <TableHead>税率</TableHead>
+            <TableHead>不含税金额</TableHead>
             <TableHead>税额</TableHead>
-            <TableHead>价税合计</TableHead>
-            <TableHead>状态</TableHead>
             <TableHead>发票文件</TableHead>
             {canManage && <TableHead className="text-right">操作</TableHead>}
           </TableRow>
@@ -699,13 +695,10 @@ function InvoiceTable({ rows, getLabel, canManage, onDelete }: {
               <TableCell className="font-mono text-xs text-slate-600">
                 {inv.invoiceCode}{inv.invoiceNumber}
               </TableCell>
-              <TableCell className="tabular-nums">¥{formatMoney(inv.amount)}</TableCell>
-              <TableCell className="text-slate-500">{inv.taxRate}%</TableCell>
-              <TableCell className="tabular-nums">¥{formatMoney(inv.taxAmount)}</TableCell>
               <TableCell className="font-medium tabular-nums">¥{formatMoney(inv.totalAmountWithTax)}</TableCell>
-              <TableCell>
-                <StatusBadge value={inv.status} label={getLabel('invoice_status', inv.status)} />
-              </TableCell>
+              <TableCell className="text-slate-500">{inv.taxRate}%</TableCell>
+              <TableCell className="tabular-nums">¥{formatMoney(inv.amount)}</TableCell>
+              <TableCell className="tabular-nums">¥{formatMoney(inv.taxAmount)}</TableCell>
               <TableCell>
                 {inv.fileAttachment ? (
                   <Button variant="ghost" size="sm" className="h-8 max-w-[220px] px-2 text-slate-600" render={

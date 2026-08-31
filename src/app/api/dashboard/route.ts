@@ -16,10 +16,9 @@ export const GET = withApi(async () => {
   const companyWhere = companyContractWhere(companyId) // 公司主体过滤(甲方或乙方任一)
   const contractWhere: Prisma.ContractWhereInput = { isDeleted: false, ...scope, ...companyWhere }
 
-  // 发票统计口径:仅有效发票(status=1)且金额>0;销项=销售合同(开票)、进项=采购合同(收票)
+  // 发票统计口径:仅金额>0;销项=销售合同(开票)、进项=采购合同(收票)
   const invoiceWhere = (contractType: number): Prisma.InvoiceWhereInput => ({
     isDeleted: false,
-    status: 1,
     amount: { gt: 0 },
     contract: { isDeleted: false, contractType, ...scope, ...companyWhere },
   })

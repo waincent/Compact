@@ -11,7 +11,6 @@ import { toNumber, assertContractAmount, calcFromGross } from '@/lib/money'
 const listSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.coerce.number().int().min(1).max(1).optional(),
   contractId: z.coerce.number().int().optional(),
   keyword: z.string().optional(),
 })
@@ -19,7 +18,7 @@ const listSchema = z.object({
 const invoiceListSelect = {
   id: true, contractId: true,
   invoiceCode: true, invoiceNumber: true, amount: true, taxRate: true,
-  taxAmount: true, totalAmountWithTax: true, status: true, issueDate: true,
+  taxAmount: true, totalAmountWithTax: true, issueDate: true,
   version: true, createdAt: true,
   contract: { select: { id: true, code: true, name: true, totalAmount: true } },
   creator: { select: { name: true } },
@@ -30,14 +29,13 @@ export const GET = withApi(async (req) => {
   const { companyId } = await resolveCompanyContext(user)
   const url = new URL(req.url)
   const params = listSchema.safeParse(Object.fromEntries(url.searchParams))
-  const { page, pageSize, status, contractId, keyword } = params.success
+  const { page, pageSize, contractId, keyword } = params.success
     ? params.data
-    : { page: 1, pageSize: 20, status: undefined, contractId: undefined, keyword: undefined }
+    : { page: 1, pageSize: 20, contractId: undefined, keyword: undefined }
 
   const where: Prisma.InvoiceWhereInput = { isDeleted: false }
   const companyWhere = companyContractWhere(companyId)
   if (Object.keys(companyWhere).length > 0) where.contract = companyWhere
-  if (status) where.status = status
   if (contractId) where.contractId = contractId
   if (keyword) {
     where.OR = [
@@ -70,7 +68,6 @@ export const GET = withApi(async (req) => {
       taxRate: Number(i.taxRate),
       taxAmount: Number(i.taxAmount),
       totalAmountWithTax: Number(i.totalAmountWithTax),
-      status: i.status,
       issueDate: i.issueDate,
       version: i.version,
       createdByName: i.creator?.name,
@@ -105,12 +102,11 @@ export const POST = withApi(async (req) => {
   if (!contract) throw new ApiError(404, '合同不存在')
   const contractTotal = toNumber(contract.totalAmount)
 
-  // 合同累计开票(仅已开票的正数发票) + 本次价税合计 ≤ 合同总额
+  // 合同累计开票(仅正数发票) + 本次价税合计 ≤ 合同总额
   const agg = await prisma.invoice.aggregate({
     where: {
       contractId: contract.id,
       isDeleted: false,
-      status: 1,
       amount: { gt: 0 },
     },
     _sum: { totalAmountWithTax: true },
@@ -129,7 +125,6 @@ export const POST = withApi(async (req) => {
       totalAmountWithTax: totalWithTax,
       issueDate: new Date(data.issueDate),
       remark: data.remark ?? null,
-      status: 1, // 已开票
       createdBy: user.id,
     },
     select: { id: true, invoiceNumber: true, totalAmountWithTax: true },
