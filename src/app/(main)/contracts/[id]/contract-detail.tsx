@@ -1,0 +1,591 @@
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import {
+  ArrowLeft, Trash2, FileText, Plus, CheckCircle2, Ban, Wallet, Pencil, FileCheck2,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
+import { Progress } from '@/components/ui/progress'
+import { StatusBadge } from '@/components/data-table/status-badge'
+import { EmptyState } from '@/components/data-table/empty-state'
+import { ConfirmDialog } from '@/components/data-table/confirm-dialog'
+import { PaymentFormDialog } from './payment-form-dialog'
+import { InvoiceFormDialog } from './invoice-form-dialog'
+import { AcceptanceFormDialog } from './acceptance-form-dialog'
+import { ContractFormDialog } from '../contract-form-dialog'
+import { useDicts } from '@/hooks/use-dicts'
+import { api } from '@/lib/api-client'
+import { toDateStr, cn } from '@/lib/utils'
+import { formatMoney } from '@/lib/money'
+
+interface Stats {
+  receive: number; pay: number; invoiceOut: number; invoiceIn: number
+  receivePercent: number; payPercent: number; invoiceOutPercent: number; invoiceInPercent: number
+  total: number
+}
+
+interface ContractDetail {
+  id: number; code: string; name: string
+  projectId: number; partyAId: number; partyBId: number
+  contractType: number; totalAmount: number
+  signDate: string; startDate: string; endDate: string; version: number
+  project?: { id: number; name: string; code: string }
+  partyA?: { id: number; name: string }
+  partyB?: { id: number; name: string }
+  creator?: { id: number; name: string; username: string }
+  stats: Stats
+}
+
+interface PaymentRow {
+  id: number; amount: number; status: number
+  recordDate: string; createdByName?: string; voucherName?: string | null
+}
+interface InvoiceRow {
+  id: number
+  invoiceCode: string; invoiceNumber: string
+  amount: number; taxRate: number; taxAmount: number; totalAmountWithTax: number
+  status: number; issueDate: string
+  createdByName?: string
+  fileAttachment?: { id: number; originalName: string; fileSize: number; mimeType: string } | null
+}
+interface AcceptanceRow {
+  id: number
+  acceptDate: string
+  createdAt: string
+  createdByName?: string
+  attachment?: { id: number; originalName: string; fileSize: number; mimeType: string } | null
+}
+
+export function ContractDetail({ contractId, companyId, canManage, canUpload, canManagePayment, canManageInvoice }: {
+  contractId: number
+  companyId: number | null
+  canManage: boolean
+  canUpload: boolean
+  canManagePayment: boolean
+  canManageInvoice: boolean
+}) {
+  const router = useRouter()
+  const { getLabel } = useDicts(['contract_type', 'payment_status', 'invoice_status'])
+  const [detail, setDetail] = useState<ContractDetail | null>(null)
+  const [payments, setPayments] = useState<PaymentRow[]>([])
+  const [invoices, setInvoices] = useState<InvoiceRow[]>([])
+  const [acceptances, setAcceptances] = useState<AcceptanceRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [recordOpen, setRecordOpen] = useState(false)
+  const [invoiceOpen, setInvoiceOpen] = useState(false)
+  const [acceptanceOpen, setAcceptanceOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [confirming, setConfirming] = useState<PaymentRow | null>(null)
+  const [voiding, setVoiding] = useState<PaymentRow | null>(null)
+  const [deleting, setDeleting] = useState<InvoiceRow | null>(null)
+  const [deletingAcceptance, setDeletingAcceptance] = useState<AcceptanceRow | null>(null)
+
+  const loadAll = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [d, p, inv, acc] = await Promise.all([
+        api.get<ContractDetail>(`/api/contracts/${contractId}`),
+        api.get<PaymentRow[]>(`/api/contracts/${contractId}/payments`),
+        api.get<InvoiceRow[]>(`/api/contracts/${contractId}/invoices`),
+        api.get<AcceptanceRow[]>(`/api/contracts/${contractId}/acceptances`),
+      ])
+      setDetail(d)
+      setPayments(p)
+      setInvoices(inv)
+      setAcceptances(acc)
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setLoading(false)
+    }
+  }, [contractId, companyId])
+
+  useEffect(() => {
+    loadAll()
+  }, [loadAll])
+
+  async function onDeleteContract() {
+    setActionLoading(true)
+    try {
+      await api.del(`/api/contracts/${contractId}`)
+      toast.success('合同已删除')
+      setDeleteOpen(false)
+      router.push(`/projects/${detail?.projectId ?? ''}`)
+    } catch (err) {
+      toast.error((err as Error).message)
+      setDeleteOpen(false)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function onDeleteAcceptance() {
+    if (!deletingAcceptance) return
+    setActionLoading(true)
+    try {
+      await api.del(`/api/acceptances/${deletingAcceptance.id}`)
+      toast.success('验收单据已删除')
+      setDeletingAcceptance(null)
+      loadAll()
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function onConfirmPayment() {
+    if (!confirming) return
+    setActionLoading(true)
+    try {
+      await api.post(`/api/payments/${confirming.id}/confirm`)
+      toast.success('已确认到账')
+      setConfirming(null)
+      loadAll()
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function onVoidPayment() {
+    if (!voiding) return
+    setActionLoading(true)
+    try {
+      await api.post(`/api/payments/${voiding.id}/void`)
+      toast.success('记录已作废')
+      setVoiding(null)
+      loadAll()
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function onDeleteInvoice() {
+    if (!deleting) return
+    setActionLoading(true)
+    try {
+      await api.del(`/api/invoices/${deleting.id}`)
+      toast.success('发票记录已删除')
+      setDeleting(null)
+      loadAll()
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-20 animate-pulse rounded-lg bg-slate-100" />
+        ))}
+      </div>
+    )
+  }
+  if (!detail) return <EmptyState title="合同不存在" />
+
+  const d = detail
+  const total = d.stats.total
+
+  const progressItem = (label: string, percent: number, amount: number, color: string) => (
+    <div>
+      <div className="mb-1 flex items-center justify-between text-xs">
+        <span className="text-slate-500">{label}</span>
+        <span className="font-medium tabular-nums text-slate-700">
+          ¥{formatMoney(amount)} <span className="text-slate-400">/ {percent}%</span>
+        </span>
+      </div>
+      <Progress value={percent} className={cn('h-2', color)} />
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+      {/* 顶部导航与操作 */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href={`/projects/${d.projectId}`} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-primary">
+          <ArrowLeft className="h-4 w-4" /> 返回项目
+        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-mono text-xs text-slate-400">{d.code}</span>
+          {canManage && (
+            <>
+              <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
+                <Pencil className="h-4 w-4" /> 编辑合同
+              </Button>
+              <Button size="sm" variant="destructive" disabled={actionLoading} onClick={() => setDeleteOpen(true)}>
+                <Trash2 className="h-4 w-4" /> 删除合同
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 基本信息 */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">{d.name}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-4">
+          <InfoItem label="所属项目" value={d.project ? d.project.name : '-'} />
+          <InfoItem label="合同类型" value={getLabel('contract_type', d.contractType)} />
+          <InfoItem label="合同金额" value={`¥${formatMoney(total)}`} highlight />
+          <InfoItem label="创建人" value={d.creator?.name ?? '-'} />
+          <InfoItem label="甲方" value={d.partyA?.name ?? '-'} />
+          <InfoItem label="乙方" value={d.partyB?.name ?? '-'} />
+          <InfoItem label="签订日期" value={toDateStr(d.signDate)} />
+          <InfoItem label="合同期限" value={`${toDateStr(d.startDate)} ~ ${toDateStr(d.endDate)}`} />
+        </CardContent>
+      </Card>
+
+      {/* 双进度条 */}
+      <Card>
+        <CardContent className="grid gap-5 pt-5 md:grid-cols-2">
+          {/* 资金方向由合同类型推导:销售=收款、采购=付款 */}
+          {d.contractType === 1 && progressItem('收款进度', d.stats.receivePercent, d.stats.receive, 'bg-green-500')}
+          {d.contractType === 2 && progressItem('付款进度', d.stats.payPercent, d.stats.pay, 'bg-amber-500')}
+          {/* 发票销项/进项由合同类型推导:销售=开票、采购=收票 */}
+          {d.contractType === 1 && progressItem('开票进度', d.stats.invoiceOutPercent, d.stats.invoiceOut, 'bg-blue-500')}
+          {d.contractType === 2 && progressItem('收票进度', d.stats.invoiceInPercent, d.stats.invoiceIn, 'bg-violet-500')}
+        </CardContent>
+      </Card>
+
+      {/* 页签:发票记录 / 资金记录 / 验收单据 */}
+      <Tabs defaultValue="invoices">
+        <TabsList variant="line">
+          <TabsTrigger value="invoices" className="gap-1.5 px-3 py-1.5">
+            <FileText className="h-4 w-4" /> 发票记录
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="gap-1.5 px-3 py-1.5">
+            <Wallet className="h-4 w-4" /> 资金记录
+          </TabsTrigger>
+          <TabsTrigger value="acceptances" className="gap-1.5 px-3 py-1.5">
+            <FileCheck2 className="h-4 w-4" /> 验收单据
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="invoices">
+          <div className="flex items-center justify-between">
+            <div />
+            {canManageInvoice && (
+              <Button size="sm" onClick={() => setInvoiceOpen(true)}>
+                <Plus className="h-4 w-4" /> 新增发票记录
+              </Button>
+            )}
+          </div>
+          <InvoiceTable
+            rows={invoices}
+            getLabel={getLabel}
+            canManage={canManageInvoice}
+            onDelete={setDeleting}
+          />
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <div className="flex items-center justify-between">
+            <div />
+            {canManagePayment && (
+              <Button size="sm" onClick={() => setRecordOpen(true)}>
+                <Plus className="h-4 w-4" /> 新增资金记录
+              </Button>
+            )}
+          </div>
+          {payments.length === 0 ? (
+            <EmptyState title="暂无资金记录" description="点击右上角「新增资金记录」开始登记" />
+          ) : (
+            <Card className="overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>金额</TableHead>
+                    <TableHead>状态</TableHead>
+                    <TableHead>发生日期</TableHead>
+                    <TableHead>凭证</TableHead>
+                    {canManagePayment && <TableHead className="text-right">操作</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className={cn('font-medium tabular-nums', d.contractType === 1 ? 'text-green-600' : 'text-amber-600')}>
+                        {d.contractType === 1 ? '+' : '-'}¥{formatMoney(p.amount)}
+                      </TableCell>
+                      <TableCell><StatusBadge value={p.status} label={getLabel('payment_status', p.status)} /></TableCell>
+                      <TableCell className="text-slate-500">{toDateStr(p.recordDate)}</TableCell>
+                      <TableCell className="text-slate-500">{p.voucherName ?? '-'}</TableCell>
+                      {canManagePayment && (
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            {p.status === 1 && (
+                              <>
+                                <Button variant="ghost" size="sm" className="h-8 px-2 text-green-600" onClick={() => setConfirming(p)}>
+                                  <CheckCircle2 className="h-3.5 w-3.5" /> {d.contractType === 1 ? '确认到账' : '确认付款'}
+                                </Button>
+                                <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500" onClick={() => setVoiding(p)}>
+                                  <Ban className="h-3.5 w-3.5" /> 作废
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="acceptances">
+          <div className="flex items-center justify-between">
+            <div />
+            {canUpload && (
+              <Button size="sm" onClick={() => setAcceptanceOpen(true)}>
+                <Plus className="h-4 w-4" /> 新增验收单
+              </Button>
+            )}
+          </div>
+          {acceptances.length === 0 ? (
+            <EmptyState title="暂无验收单据" description="点击右上角「新增验收单」登记验收日期与验收单文件" />
+          ) : (
+            <Card className="overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>验收日期</TableHead>
+                    <TableHead>验收单文件</TableHead>
+                    <TableHead>登记人</TableHead>
+                    <TableHead>登记时间</TableHead>
+                    {canUpload && <TableHead className="text-right">操作</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {acceptances.map((a) => (
+                    <TableRow key={a.id}>
+                      <TableCell className="font-medium">{toDateStr(a.acceptDate)}</TableCell>
+                      <TableCell>
+                        {a.attachment ? (
+                          <Button variant="ghost" size="sm" className="h-8 max-w-[240px] px-2 text-slate-600" render={
+                            <a href={`/api/files/${a.attachment.id}`} target="_blank" rel="noreferrer" />
+                          }>
+                            <FileText className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{a.attachment.originalName}</span>
+                          </Button>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-slate-500">{a.createdByName ?? '-'}</TableCell>
+                      <TableCell className="text-slate-500">{toDateStr(a.createdAt)}</TableCell>
+                      {canUpload && (
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600" onClick={() => setDeletingAcceptance(a)}>
+                            <Trash2 className="h-3.5 w-3.5" /> 删除
+                          </Button>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          )}
+        </TabsContent>
+
+      </Tabs>
+
+      {/* 新增资金 / 发票 */}
+      <PaymentFormDialog
+        open={recordOpen}
+        onOpenChange={setRecordOpen}
+        contractId={contractId}
+        onSaved={() => {
+          setRecordOpen(false)
+          loadAll()
+        }}
+      />
+
+      <InvoiceFormDialog
+        open={invoiceOpen}
+        onOpenChange={setInvoiceOpen}
+        contractId={contractId}
+        onSaved={() => {
+          setInvoiceOpen(false)
+          loadAll()
+        }}
+      />
+
+      {/* 新增验收单据 */}
+      <AcceptanceFormDialog
+        open={acceptanceOpen}
+        onOpenChange={setAcceptanceOpen}
+        contractId={contractId}
+        onSaved={() => {
+          setAcceptanceOpen(false)
+          loadAll()
+        }}
+      />
+
+      {/* 编辑合同 */}
+      {detail && (
+        <ContractFormDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          editing={detail}
+          onSaved={() => {
+            setEditOpen(false)
+            loadAll()
+          }}
+        />
+      )}
+
+      {/* 删除合同 */}
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="删除合同"
+        description={detail ? `确定删除合同「${detail.name}」吗?该合同下的所有资金记录、发票记录、验收单据与合同附件将被一并删除,且无法恢复。` : ''}
+        confirmText="删除"
+        variant="danger"
+        loading={actionLoading}
+        onConfirm={onDeleteContract}
+      />
+
+      {/* 资金确认/作废、发票删除 */}
+      <ConfirmDialog
+        open={Boolean(confirming)}
+        onOpenChange={(o) => !o && setConfirming(null)}
+        title={d.contractType === 1 ? '确认到账' : '确认付款'}
+        description={confirming ? `确认这笔${d.contractType === 1 ? '收款' : '付款'} ¥${formatMoney(confirming.amount)} 已到账/完成吗?` : ''}
+        confirmText="确认"
+        loading={actionLoading}
+        onConfirm={onConfirmPayment}
+      />
+      <ConfirmDialog
+        open={Boolean(voiding)}
+        onOpenChange={(o) => !o && setVoiding(null)}
+        title="作废资金记录"
+        description={voiding ? `确定作废这笔¥${formatMoney(voiding.amount)}的资金记录吗?作废后不计入合同进度。` : ''}
+        confirmText="作废"
+        variant="danger"
+        loading={actionLoading}
+        onConfirm={onVoidPayment}
+      />
+      <ConfirmDialog
+        open={Boolean(deleting)}
+        onOpenChange={(o) => !o && setDeleting(null)}
+        title="删除发票记录"
+        description={deleting ? `确定删除发票记录「${deleting.invoiceCode ?? ''}${deleting.invoiceNumber}」吗?删除后不再计入合同进度。` : ''}
+        confirmText="删除"
+        variant="danger"
+        loading={actionLoading}
+        onConfirm={onDeleteInvoice}
+      />
+
+      {/* 删除验收单据 */}
+      <ConfirmDialog
+        open={Boolean(deletingAcceptance)}
+        onOpenChange={(o) => !o && setDeletingAcceptance(null)}
+        title="删除验收单据"
+        description={deletingAcceptance ? `确定删除${toDateStr(deletingAcceptance.acceptDate)}的验收单据吗?${deletingAcceptance.attachment ? '关联的验收单文件将一并删除。' : ''}` : ''}
+        confirmText="删除"
+        variant="danger"
+        loading={actionLoading}
+        onConfirm={onDeleteAcceptance}
+      />
+    </div>
+  )
+}
+
+function InfoItem({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div>
+      <p className="text-xs text-slate-400">{label}</p>
+      <p className={cn('mt-0.5', highlight ? 'text-base font-semibold text-primary' : 'text-slate-700')}>{value}</p>
+    </div>
+  )
+}
+
+function InvoiceTable({ rows, getLabel, canManage, onDelete }: {
+  rows: InvoiceRow[]
+  getLabel: (t: string, v: number | string | null | undefined) => string
+  canManage: boolean
+  onDelete: (inv: InvoiceRow) => void
+}) {
+  if (rows.length === 0) return <EmptyState title="暂无发票记录" />
+  return (
+    <Card className="overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>发票号码</TableHead>
+            <TableHead>不含税金额</TableHead>
+            <TableHead>税率</TableHead>
+            <TableHead>税额</TableHead>
+            <TableHead>价税合计</TableHead>
+            <TableHead>状态</TableHead>
+            <TableHead>开票日期</TableHead>
+            <TableHead>发票文件</TableHead>
+            {canManage && <TableHead className="text-right">操作</TableHead>}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((inv) => (
+            <TableRow key={inv.id}>
+              <TableCell className="font-mono text-xs text-slate-600">
+                {inv.invoiceCode}{inv.invoiceNumber}
+              </TableCell>
+              <TableCell className="tabular-nums">¥{formatMoney(inv.amount)}</TableCell>
+              <TableCell className="text-slate-500">{inv.taxRate}%</TableCell>
+              <TableCell className="tabular-nums">¥{formatMoney(inv.taxAmount)}</TableCell>
+              <TableCell className="font-medium tabular-nums">¥{formatMoney(inv.totalAmountWithTax)}</TableCell>
+              <TableCell>
+                <StatusBadge value={inv.status} label={getLabel('invoice_status', inv.status)} />
+              </TableCell>
+              <TableCell className="text-slate-500">{toDateStr(inv.issueDate)}</TableCell>
+              <TableCell>
+                {inv.fileAttachment ? (
+                  <Button variant="ghost" size="sm" className="h-8 max-w-[220px] px-2 text-slate-600" render={
+                    <a href={`/api/files/${inv.fileAttachment.id}`} target="_blank" rel="noreferrer" />
+                  }>
+                    <FileText className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{inv.fileAttachment.originalName}</span>
+                  </Button>
+                ) : (
+                  <span className="text-slate-400">-</span>
+                )}
+              </TableCell>
+              {canManage && (
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-red-600" onClick={() => onDelete(inv)}>
+                      <Trash2 className="h-3.5 w-3.5" /> 删除
+                    </Button>
+                  </div>
+                </TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
+  )
+}

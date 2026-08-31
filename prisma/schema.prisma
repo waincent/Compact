@@ -1,0 +1,294 @@
+// 契通 Compact — Prisma Schema
+// 金额 Decimal(18,2);日期 @db.Date;枚举一律 Int(走 sys_dict);软删除 isDeleted+deletedAt;乐观锁 version
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- 用户 ----------
+model User {
+  id                 Int       @id @default(autoincrement())
+  username           String    @unique @db.VarChar(50)
+  passwordHash       String    @map("password_hash") @db.VarChar(255)
+  name               String    @db.VarChar(50)
+  avatar             String?   @db.VarChar(255)
+  email              String?   @db.VarChar(100)
+  phone              String?   @db.VarChar(20)
+  role               Int       @default(4)
+  companyId          Int?      @map("company_id")
+  status             Int       @default(1)
+  mustChangePassword Boolean   @default(false) @map("must_change_password")
+  failedLoginCount   Int       @default(0) @map("failed_login_count")
+  lockedUntil        DateTime? @map("locked_until")
+  lastLoginAt        DateTime? @map("last_login_at")
+  lastLoginIp        String?   @map("last_login_ip") @db.VarChar(50)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  company          Company?   @relation("CompanyUsers", fields: [companyId], references: [id])
+  createdCompanies Company[] @relation("CompanyCreator")
+  createdProjects  Project[] @relation("ProjectCreator")
+  createdContracts Contract[] @relation("ContractCreator")
+  createdPayments  PaymentRecord[] @relation("PaymentCreator")
+  createdInvoices  Invoice[] @relation("InvoiceCreator")
+  createdAttachments Attachment[] @relation("AttachmentCreator")
+  createdAcceptanceDocs AcceptanceDoc[] @relation("AcceptanceCreator")
+  operationLogs    OperationLog[]
+  loginLogs        LoginLog[]
+
+  @@map("user")
+}
+
+// ---------- 公司 ----------
+model Company {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(200)
+  creditCode   String?  @unique @map("credit_code") @db.VarChar(50)
+  address      String?  @map("address") @db.VarChar(200)
+  phone        String?  @map("phone") @db.VarChar(20)
+  contactName  String?  @map("contact_name") @db.VarChar(50)
+  contactPhone String?  @map("contact_phone") @db.VarChar(20)
+  bankName     String?  @map("bank_name") @db.VarChar(100)
+  bankAccount  String?  @map("bank_account") @db.VarChar(50)
+  remark       String?  @db.VarChar(500)
+  status       Int      @default(1)
+  isDeleted    Boolean  @default(false) @map("is_deleted")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    Int?     @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  creator      User?      @relation("CompanyCreator", fields: [createdBy], references: [id])
+  users        User[]     @relation("CompanyUsers")
+  contractsAsA Contract[] @relation("ContractPartyA")
+  contractsAsB Contract[] @relation("ContractPartyB")
+
+  @@index([isDeleted, createdAt])
+  @@map("company")
+}
+
+// ---------- 项目 ----------
+model Project {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique @db.VarChar(30)
+  name        String   @db.VarChar(200)
+  description String?  @db.VarChar(500)
+  status      Int      @default(1)
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  version     Int      @default(0)
+  isDeleted   Boolean  @default(false) @map("is_deleted")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   Int?     @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  creator   User?      @relation("ProjectCreator", fields: [createdBy], references: [id])
+  contracts Contract[]
+
+  @@index([status, isDeleted])
+  @@index([isDeleted, endDate])
+  @@map("project")
+}
+
+// ---------- 合同 ----------
+model Contract {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique @db.VarChar(30)
+  name         String   @db.VarChar(200)
+  projectId    Int      @map("project_id")
+  partyAId     Int      @map("party_a_id")
+  partyBId     Int      @map("party_b_id")
+  contractType Int      @default(1) @map("contract_type")
+  totalAmount  Decimal  @map("total_amount") @db.Decimal(18, 2)
+  signDate     DateTime @map("sign_date") @db.Date
+  startDate    DateTime @map("start_date") @db.Date
+  endDate      DateTime @map("end_date") @db.Date
+  version      Int      @default(0)
+  isDeleted    Boolean  @default(false) @map("is_deleted")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    Int?     @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  project    Project             @relation(fields: [projectId], references: [id])
+  partyA     Company             @relation("ContractPartyA", fields: [partyAId], references: [id])
+  partyB     Company             @relation("ContractPartyB", fields: [partyBId], references: [id])
+  creator    User?               @relation("ContractCreator", fields: [createdBy], references: [id])
+  payments   PaymentRecord[]
+  invoices   Invoice[]
+  acceptanceDocs AcceptanceDoc[]
+
+  @@index([projectId])
+  @@index([partyAId])
+  @@index([partyBId])
+  @@index([isDeleted, endDate])
+  @@map("contract")
+}
+
+// ---------- 资金记录(收款/付款由合同类型推导:销售=收款、采购=付款) ----------
+model PaymentRecord {
+  id                  Int       @id @default(autoincrement())
+  contractId          Int       @map("contract_id")
+  amount              Decimal   @db.Decimal(18, 2)
+  status              Int       @default(1)
+  recordDate          DateTime  @map("record_date") @db.Date
+  voucherAttachmentId Int?      @map("voucher_attachment_id")
+  version             Int       @default(0)
+  isDeleted           Boolean   @default(false) @map("is_deleted")
+  deletedAt           DateTime? @map("deleted_at")
+  createdBy           Int?      @map("created_by")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  contract Contract        @relation(fields: [contractId], references: [id])
+  creator  User?           @relation("PaymentCreator", fields: [createdBy], references: [id])
+
+  @@index([isDeleted, status])
+  @@map("payment_record")
+}
+
+// ---------- 发票(销项/进项合并) ----------
+model Invoice {
+  id                 Int      @id @default(autoincrement())
+  contractId         Int      @map("contract_id")
+  invoiceCode        String?  @map("invoice_code") @db.VarChar(30)
+  invoiceNumber      String   @unique @map("invoice_number") @db.VarChar(30)
+  amount             Decimal  @db.Decimal(18, 2)
+  taxRate            Decimal  @default(13) @map("tax_rate") @db.Decimal(5, 2)
+  taxAmount          Decimal  @default(0) @map("tax_amount") @db.Decimal(18, 2)
+  totalAmountWithTax Decimal  @default(0) @map("total_amount_with_tax") @db.Decimal(18, 2)
+  issueDate          DateTime @map("issue_date") @db.Date
+  fileAttachmentId   Int?     @unique @map("file_attachment_id")
+  status             Int      @default(1)
+  remark             String?  @db.VarChar(300)
+  version            Int      @default(0)
+  isDeleted          Boolean  @default(false) @map("is_deleted")
+  deletedAt          DateTime? @map("deleted_at")
+  createdBy          Int?     @map("created_by")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  contract        Contract  @relation(fields: [contractId], references: [id])
+  creator         User?     @relation("InvoiceCreator", fields: [createdBy], references: [id])
+  fileAttachment  Attachment? @relation("InvoiceFile", fields: [fileAttachmentId], references: [id])
+
+  @@index([contractId])
+  @@index([isDeleted, status])
+  @@map("invoice")
+}
+
+// ---------- 合同验收单据(验收日期 + 验收单文件) ----------
+model AcceptanceDoc {
+  id           Int      @id @default(autoincrement())
+  contractId   Int      @map("contract_id")
+  acceptDate   DateTime @map("accept_date") @db.Date
+  attachmentId Int?     @unique @map("attachment_id")
+  version      Int      @default(0)
+  createdBy    Int?     @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  contract   Contract   @relation(fields: [contractId], references: [id])
+  creator    User?      @relation("AcceptanceCreator", fields: [createdBy], references: [id])
+  attachment Attachment? @relation("AcceptanceFile", fields: [attachmentId], references: [id])
+
+  @@index([contractId])
+  @@map("acceptance_doc")
+}
+
+// ---------- 附件(多态关联) ----------
+model Attachment {
+  id           Int      @id @default(autoincrement())
+  businessType String   @map("business_type") @db.VarChar(50)
+  businessId   Int      @map("business_id")
+  fileName     String   @map("file_name") @db.VarChar(255)
+  filePath     String   @map("file_path") @db.VarChar(255)
+  fileSize     Int      @map("file_size")
+  mimeType     String   @map("mime_type") @db.VarChar(100)
+  originalName String   @map("original_name") @db.VarChar(255)
+  createdBy    Int?     @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  creator User? @relation("AttachmentCreator", fields: [createdBy], references: [id])
+  invoiceFile Invoice? @relation("InvoiceFile")
+  acceptanceDoc AcceptanceDoc? @relation("AcceptanceFile")
+
+  @@index([businessType, businessId])
+  @@map("attachment")
+}
+
+// ---------- 数据字典 ----------
+model SysDict {
+  id        Int    @id @default(autoincrement())
+  dictType  String @map("dict_type") @db.VarChar(50)
+  dictLabel String @map("dict_label") @db.VarChar(50)
+  dictValue String @map("dict_value") @db.VarChar(20)
+  sortOrder Int    @default(0) @map("sort_order")
+  status    Int    @default(1)
+
+  @@unique([dictType, dictValue])
+  @@index([dictType, status])
+  @@map("sys_dict")
+}
+
+// ---------- 操作日志 ----------
+model OperationLog {
+  id           Int      @id @default(autoincrement())
+  userId       Int?     @map("user_id")
+  module       String   @db.VarChar(50)
+  action       String   @db.VarChar(50)
+  businessType String?  @map("business_type") @db.VarChar(50)
+  businessId   Int?     @map("business_id")
+  detailJson   String?  @map("detail_json") @db.Text
+  ip           String?  @db.VarChar(50)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([module, createdAt])
+  @@map("operation_log")
+}
+
+// ---------- 登录日志 ----------
+model LoginLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  username  String   @db.VarChar(50)
+  ip        String?  @db.VarChar(50)
+  userAgent String?  @map("user_agent") @db.VarChar(255)
+  success   Boolean
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@map("login_log")
+}
+
+// ---------- 系统参数 ----------
+model SysParam {
+  id          Int      @id @default(autoincrement())
+  paramKey    String   @unique @map("param_key") @db.VarChar(100)
+  paramValue  String   @map("param_value") @db.VarChar(500)
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("sys_param")
+}
+
+// ---------- 业务编号序列 ----------
+model Sequence {
+  id     Int    @id @default(autoincrement())
+  bizKey String @unique @db.VarChar(50)
+  seq    Int    @default(0)
+
+  @@map("sys_sequence")
+}
