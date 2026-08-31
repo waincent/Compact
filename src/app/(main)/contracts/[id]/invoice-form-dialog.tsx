@@ -56,7 +56,7 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      contractId: '', invoiceNumber: '', totalAmountWithTax: '', taxRate: '13', issueDate: today(),
+      contractId: '', invoiceNumber: '', totalAmountWithTax: '', taxRate: '6', issueDate: today(),
     },
   })
 
@@ -75,7 +75,7 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
     setInvoiceFile(null)
     form.reset({
       contractId: contractId ? String(contractId) : '',
-      invoiceNumber: '', totalAmountWithTax: '', taxRate: '13', issueDate: today(),
+      invoiceNumber: '', totalAmountWithTax: '', taxRate: '6', issueDate: today(),
     })
   }, [open, contractId, form])
 
@@ -227,8 +227,8 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
                 税率(%) <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={form.watch('taxRate') ?? '13'}
-                onValueChange={(v) => form.setValue('taxRate', v ?? '13', { shouldValidate: true })}
+                value={form.watch('taxRate') ?? '6'}
+                onValueChange={(v) => form.setValue('taxRate', v ?? '6', { shouldValidate: true })}
               >
                 <SelectTrigger className="w-full"><SelectValue placeholder="选择税率" /></SelectTrigger>
                 <SelectContent>
