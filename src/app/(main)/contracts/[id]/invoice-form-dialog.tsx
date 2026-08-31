@@ -157,7 +157,7 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
               <Label>
                 所属合同 <span className="text-red-500">*</span>
               </Label>
-              <div className="rounded-lg border border-input bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              <div className="rounded-lg border border-white/40 bg-white/40 px-3 py-2 text-sm text-slate-600">
                 {selectedContract ? `${selectedContract.code} · ${selectedContract.name}` : `合同 #${contractId}`}
               </div>
             </div>
@@ -244,7 +244,7 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
           </div>
 
           {gross > 0 && (
-            <div className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
+            <div className="rounded-md bg-white/40 px-3 py-2 text-sm text-slate-600">
               不含税金额 <span className="font-medium tabular-nums">¥{formatMoney(net)}</span> · 税额{' '}
               <span className="font-semibold tabular-nums text-slate-900">¥{formatMoney(tax)}</span>
             </div>
@@ -264,7 +264,7 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
               }}
             />
             {invoiceFile ? (
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-input bg-slate-50 px-3 py-2">
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-white/40 bg-white/40 px-3 py-2">
                 <span className="flex min-w-0 items-center gap-2 text-sm text-slate-600">
                   <FileText className="h-4 w-4 shrink-0 text-slate-400" />
                   <span className="truncate">{invoiceFile.name}</span>

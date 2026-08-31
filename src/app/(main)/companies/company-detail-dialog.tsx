@@ -44,7 +44,7 @@ export function CompanyDetailDialog({
           <DialogDescription>公司档案详情</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2.5 rounded-lg border border-slate-100 p-4">
+        <div className="space-y-2.5 rounded-lg border border-white/30 p-4">
           <InfoRow label="社会信用代码" value={company.creditCode} />
           <InfoRow label="公司地址" value={company.address} />
           <InfoRow label="公司电话" value={company.phone} />

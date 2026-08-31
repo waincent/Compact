@@ -76,7 +76,7 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
             onClick={() => setStatusTab(null)}
             className={cn(
               'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-              statusTab === null ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100',
+              statusTab === null ? 'bg-primary text-white' : 'text-slate-600 hover:bg-white/50',
             )}
           >
             全部
@@ -87,7 +87,7 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
               onClick={() => setStatusTab(Number(t.value))}
               className={cn(
                 'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-                statusTab === Number(t.value) ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100',
+                statusTab === Number(t.value) ? 'bg-primary text-white' : 'text-slate-600 hover:bg-white/50',
               )}
             >
               {t.label}
@@ -145,7 +145,7 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
                 <TableRow
                   key={p.id}
                   onClick={() => router.push(`/projects/${p.id}`)}
-                  className="h-14 cursor-pointer transition-colors hover:bg-slate-50"
+                  className="h-14 cursor-pointer transition-colors hover:bg-white/40"
                 >
                   <TableCell className="font-mono text-xs text-slate-500">{p.code}</TableCell>
                   <TableCell>

@@ -167,7 +167,7 @@ export function ContractFormDialog({ open, onOpenChange, onSaved, projectId, edi
               所属项目 <span className="text-red-500">*</span>
             </Label>
             {projectId ? (
-              <div className="rounded-lg border border-input bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              <div className="rounded-lg border border-white/40 bg-white/40 px-3 py-2 text-sm text-slate-600">
                 {selectedProject ? `${selectedProject.code} · ${selectedProject.name}` : `项目 #${projectId}`}
               </div>
             ) : (

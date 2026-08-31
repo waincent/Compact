@@ -90,7 +90,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-[#F5F7FA] px-4">
+    <div className="flex flex-1 items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-blue-200">
@@ -102,7 +102,7 @@ function LoginContent() {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border-white/40 bg-white/60 p-6 shadow-xl backdrop-blur-xl">
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
             <div className="space-y-1.5">
               <Label htmlFor="account">账号</Label>
@@ -136,7 +136,7 @@ function LoginContent() {
                         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
                           username === u.username
                             ? 'bg-primary text-white'
-                            : 'bg-slate-100 text-slate-600'
+                            : 'bg-white/50 text-slate-600'
                         }`}
                       >
                         {u.name.slice(0, 1)}

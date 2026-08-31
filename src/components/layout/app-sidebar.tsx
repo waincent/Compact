@@ -18,10 +18,10 @@ function NavLink({ item }: { item: NavItem }) {
     <Link
       href={item.href}
       className={cn(
-        'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+        'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all',
         active
-          ? 'bg-primary/10 text-primary'
-          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+          ? 'bg-white/70 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] ring-1 ring-white/50'
+          : 'text-slate-600 hover:bg-white/50 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_3px_0_rgba(0,0,0,0.08),0_1px_2px_-1px_rgba(0,0,0,0.08)] hover:text-slate-900',
       )}
     >
       <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-primary' : 'text-slate-400')} />
@@ -32,8 +32,8 @@ function NavLink({ item }: { item: NavItem }) {
 
 export function AppSidebar() {
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-200 bg-white md:flex">
-      <div className="flex h-16 items-center gap-2.5 border-b border-slate-100 px-5">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-white/40 bg-white/50 backdrop-blur-xl md:flex">
+      <div className="flex h-16 items-center gap-2.5 border-b border-white/30 px-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
           <ShieldCheck className="h-4.5 w-4.5" />
         </div>
@@ -47,7 +47,7 @@ export function AppSidebar() {
           <NavLink key={item.href} item={item} />
         ))}
       </nav>
-      <div className="border-t border-slate-100 px-5 py-3 text-[11px] text-slate-400">
+      <div className="border-t border-white/30 px-5 py-3 text-[11px] text-slate-400">
         Compact v0.1 · 契通
       </div>
     </aside>

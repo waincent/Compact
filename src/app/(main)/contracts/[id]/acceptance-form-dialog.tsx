@@ -111,7 +111,7 @@ export function AcceptanceFormDialog({ open, onOpenChange, onSaved, contractId }
               }}
             />
             {acceptFile ? (
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-input bg-slate-50 px-3 py-2">
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-white/40 bg-white/40 px-3 py-2">
                 <span className="flex min-w-0 items-center gap-2 text-sm text-slate-600">
                   <FileText className="h-4 w-4 shrink-0 text-slate-400" />
                   <span className="truncate">{acceptFile.name}</span>

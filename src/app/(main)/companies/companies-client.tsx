@@ -162,7 +162,7 @@ export function CompaniesClient({ canManage }: { canManage: boolean }) {
               {list.map((c) => (
                 <TableRow
                   key={c.id}
-                  className="h-14 cursor-pointer hover:bg-slate-50/60"
+                  className="h-14 cursor-pointer hover:bg-white/40"
                   onClick={() => setDetail(c)}
                 >
                   <TableCell className="min-w-[180px] font-medium">{c.name}</TableCell>

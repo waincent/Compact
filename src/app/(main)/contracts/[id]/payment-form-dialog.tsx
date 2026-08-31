@@ -122,7 +122,7 @@ export function PaymentFormDialog({ open, onOpenChange, onSaved, contractId }: P
               <Label>
                 所属合同 <span className="text-red-500">*</span>
               </Label>
-              <div className="rounded-lg border border-input bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              <div className="rounded-lg border border-white/40 bg-white/40 px-3 py-2 text-sm text-slate-600">
                 {selectedContract ? `${selectedContract.code} · ${selectedContract.name}` : `合同 #${contractId}`}
               </div>
             </div>
@@ -151,7 +151,7 @@ export function PaymentFormDialog({ open, onOpenChange, onSaved, contractId }: P
           )}
 
           {selectedContract && (
-            <p className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-500">
+            <p className="rounded-md bg-white/40 px-3 py-2 text-xs text-slate-500">
               该合同为{selectedContract.contractType === 1 ? '销售合同,资金将记为收款' : '采购合同,资金将记为付款'}
             </p>
           )}
@@ -190,7 +190,7 @@ export function PaymentFormDialog({ open, onOpenChange, onSaved, contractId }: P
               }}
             />
             {voucherFile ? (
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-input bg-slate-50 px-3 py-2">
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-white/40 bg-white/40 px-3 py-2">
                 <span className="flex min-w-0 items-center gap-2 text-sm text-slate-600">
                   <ImageIcon className="h-4 w-4 shrink-0 text-slate-400" />
                   <span className="truncate">{voucherFile.name}</span>

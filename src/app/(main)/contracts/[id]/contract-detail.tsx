@@ -234,7 +234,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
     return (
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 animate-pulse rounded-lg bg-slate-100" />
+          <div key={i} className="h-20 animate-pulse rounded-lg bg-white/50" />
         ))}
       </div>
     )
@@ -245,7 +245,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
   const total = d.stats.total
 
   const progressItem = (label: string, percent: number, amount: number, stroke: string, text: string) => (
-    <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+    <div className="flex items-center gap-4 rounded-xl border border-white/30 bg-white/40 p-4">
       <ProgressRing percent={percent} stroke={stroke} text={text} />
       <div className="min-w-0">
         <p className="text-sm font-medium text-slate-800">{label}</p>

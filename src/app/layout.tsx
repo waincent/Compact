@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="zh-CN" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-[#F5F7FA] font-sans text-[#374151]">
+      <body className="min-h-full flex flex-col bg-background font-sans text-foreground">
         {children}
         <Toaster position="top-center" richColors closeButton />
       </body>

@@ -90,7 +90,7 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-24 animate-pulse rounded-lg bg-slate-100" />
+          <div key={i} className="h-24 animate-pulse rounded-lg bg-white/50" />
         ))}
       </div>
     )
@@ -179,7 +179,7 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
                   <TableRow
                     key={c.id}
                     onClick={() => router.push(`/contracts/${c.id}`)}
-                    className="h-14 cursor-pointer transition-colors hover:bg-slate-50"
+                    className="h-14 cursor-pointer transition-colors hover:bg-white/40"
                   >
                     <TableCell className="font-mono text-xs text-slate-500">{c.code}</TableCell>
                     <TableCell className="font-medium">{c.name}</TableCell>
@@ -240,7 +240,7 @@ function Info({ label, value }: { label: string; value: string }) {
 }
 
 const summaryTones: Record<string, string> = {
-  default: 'border-slate-100 bg-slate-50/50 text-slate-800',
+  default: 'border-white/30 bg-white/40 text-slate-800',
   sales: 'border-green-100 bg-green-50/60 text-green-600',
   purchase: 'border-amber-100 bg-amber-50/60 text-amber-600',
 }
