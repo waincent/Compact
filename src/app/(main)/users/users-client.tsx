@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Plus, Pencil, Power, Search, Trash2 } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,11 +13,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PaginationBar } from '@/components/data-table/pagination-bar'
 import { EmptyState } from '@/components/data-table/empty-state'
 import { StatusBadge } from '@/components/data-table/status-badge'
-import { ConfirmDialog } from '@/components/data-table/confirm-dialog'
 import { UserFormDialog } from './user-form-dialog'
+import { UserDetailDialog } from './user-detail-dialog'
 import { useDicts } from '@/hooks/use-dicts'
 import { api } from '@/lib/api-client'
-import { cn } from '@/lib/utils'
 
 interface UserRow {
   id: number
@@ -44,8 +43,7 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
   const [keyword, setKeyword] = useState('')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<UserRow | null>(null)
-  const [deleting, setDeleting] = useState<UserRow | null>(null)
-  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [detailId, setDetailId] = useState<number | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -67,32 +65,6 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
   useEffect(() => {
     load()
   }, [load])
-
-  async function onToggleStatus(u: UserRow) {
-    const next = u.status === 1 ? 0 : 1
-    try {
-      await api.put(`/api/users/${u.id}`, { status: next })
-      toast.success(next === 1 ? '已启用' : '已停用')
-      load()
-    } catch (err) {
-      toast.error((err as Error).message)
-    }
-  }
-
-  async function onDelete() {
-    if (!deleting) return
-    setDeleteLoading(true)
-    try {
-      await api.del(`/api/users/${deleting.id}`)
-      toast.success('用户已删除')
-      setDeleting(null)
-      load()
-    } catch (err) {
-      toast.error((err as Error).message)
-    } finally {
-      setDeleteLoading(false)
-    }
-  }
 
   return (
     <div>
@@ -139,12 +111,15 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
                 <TableHead>邮箱</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>最近登录</TableHead>
-                <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {list.map((u) => (
-                <TableRow key={u.id}>
+                <TableRow
+                  key={u.id}
+                  onClick={() => setDetailId(u.id)}
+                  className="cursor-pointer transition-colors hover:bg-slate-50"
+                >
                   <TableCell className="font-medium">{u.username}</TableCell>
                   <TableCell>{u.name}</TableCell>
                   <TableCell className="text-slate-500">{u.companyName ?? '-'}</TableCell>
@@ -157,37 +132,6 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
                   </TableCell>
                   <TableCell className="text-slate-500">
                     {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('zh-CN', { hour12: false }) : '从未登录'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 text-primary"
-                        onClick={() => {
-                          setEditing(u)
-                          setFormOpen(true)
-                        }}
-                      >
-                        <Pencil className="h-3.5 w-3.5" /> 编辑
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn('h-8 px-2', u.status === 1 ? 'text-amber-600' : 'text-green-600')}
-                        onClick={() => onToggleStatus(u)}
-                      >
-                        <Power className="h-3.5 w-3.5" /> {u.status === 1 ? '停用' : '启用'}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 text-red-500 hover:text-red-600"
-                        onClick={() => setDeleting(u)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" /> 删除
-                      </Button>
-                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -220,15 +164,16 @@ export function UsersClient({ companyId }: { companyId: number | null }) {
         }}
       />
 
-      <ConfirmDialog
-        open={Boolean(deleting)}
-        onOpenChange={(o) => !o && setDeleting(null)}
-        title="删除用户"
-        description={deleting ? `确定删除用户「${deleting.username}」吗?该操作不可恢复。` : ''}
-        confirmText="删除"
-        variant="danger"
-        loading={deleteLoading}
-        onConfirm={onDelete}
+      <UserDetailDialog
+        userId={detailId}
+        open={detailId != null}
+        onOpenChange={(o) => !o && setDetailId(null)}
+        onEdit={(u) => {
+          setDetailId(null)
+          setEditing(u)
+          setFormOpen(true)
+        }}
+        onChanged={load}
       />
     </div>
   )
