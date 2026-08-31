@@ -499,7 +499,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                         </Button>
                         {canUpload && (
                           <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600" onClick={() => setDeletingFile(f)}>
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-3.5 w-3.5" /> 删除
                           </Button>
                         )}
                       </TableCell>
@@ -714,7 +714,7 @@ function InvoiceTable({ rows, canManage, onDelete }: {
               {canManage && (
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-red-600" onClick={() => onDelete(inv)}>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600" onClick={() => onDelete(inv)}>
                       <Trash2 className="h-3.5 w-3.5" /> 删除
                     </Button>
                   </div>
