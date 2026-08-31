@@ -119,21 +119,24 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center gap-3">
             <CardTitle className="text-lg">{project.name}</CardTitle>
-            <span className="font-mono text-xs text-slate-400">{project.code}</span>
             <StatusBadge value={project.status} label={getLabel('project_status', project.status)} />
           </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-4">
-          <Info label="合同数量" value={`${project._count?.contracts ?? 0} 份`} />
-          <Info label="起止日期" value={`${toDateStr(project.startDate)} ~ ${toDateStr(project.endDate)}`} />
-          <Info label="创建人" value={project.creator?.name ?? '-'} />
+        <CardContent className="space-y-4 text-sm">
+          <Info label="项目编号" value={project.code} />
+          {project.description && (
+            <div>
+              <p className="text-xs text-slate-400">项目描述</p>
+              <p className="mt-1 text-slate-600">{project.description}</p>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-4">
+            <Info label="开始日期" value={toDateStr(project.startDate)} />
+            <Info label="结束日期" value={toDateStr(project.endDate)} />
+            <Info label="合同数量" value={`${project._count?.contracts ?? 0} 份`} />
+            <Info label="创建人" value={project.creator?.name ?? '-'} />
+          </div>
         </CardContent>
-        {project.description && (
-          <CardContent className="pt-0 text-sm text-slate-600">
-            <p className="text-xs text-slate-400">项目描述</p>
-            <p className="mt-1">{project.description}</p>
-          </CardContent>
-        )}
       </Card>
 
       <Card>
