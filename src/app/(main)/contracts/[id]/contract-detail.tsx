@@ -681,13 +681,13 @@ function InvoiceTable({ rows, getLabel, canManage, onDelete }: {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>开票日期</TableHead>
             <TableHead>发票号码</TableHead>
             <TableHead>不含税金额</TableHead>
             <TableHead>税率</TableHead>
             <TableHead>税额</TableHead>
             <TableHead>价税合计</TableHead>
             <TableHead>状态</TableHead>
-            <TableHead>开票日期</TableHead>
             <TableHead>发票文件</TableHead>
             {canManage && <TableHead className="text-right">操作</TableHead>}
           </TableRow>
@@ -695,6 +695,7 @@ function InvoiceTable({ rows, getLabel, canManage, onDelete }: {
         <TableBody>
           {rows.map((inv) => (
             <TableRow key={inv.id}>
+              <TableCell className="text-slate-500">{toDateStr(inv.issueDate)}</TableCell>
               <TableCell className="font-mono text-xs text-slate-600">
                 {inv.invoiceCode}{inv.invoiceNumber}
               </TableCell>
@@ -705,7 +706,6 @@ function InvoiceTable({ rows, getLabel, canManage, onDelete }: {
               <TableCell>
                 <StatusBadge value={inv.status} label={getLabel('invoice_status', inv.status)} />
               </TableCell>
-              <TableCell className="text-slate-500">{toDateStr(inv.issueDate)}</TableCell>
               <TableCell>
                 {inv.fileAttachment ? (
                   <Button variant="ghost" size="sm" className="h-8 max-w-[220px] px-2 text-slate-600" render={
