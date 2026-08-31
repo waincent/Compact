@@ -137,7 +137,7 @@ export function CompaniesClient({ canManage }: { canManage: boolean }) {
         {loading ? (
           <div className="space-y-3 p-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <Skeleton key={i} className="h-[50px] w-full" />
             ))}
           </div>
         ) : list.length === 0 ? (
@@ -162,7 +162,7 @@ export function CompaniesClient({ canManage }: { canManage: boolean }) {
               {list.map((c) => (
                 <TableRow
                   key={c.id}
-                  className="h-12 cursor-pointer hover:bg-slate-50/60"
+                  className="h-[50px] cursor-pointer hover:bg-slate-50/60"
                   onClick={() => setDetail(c)}
                 >
                   <TableCell className="min-w-[180px] font-medium">{c.name}</TableCell>

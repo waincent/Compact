@@ -362,7 +362,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                 </TableHeader>
                 <TableBody>
                   {payments.map((p) => (
-                    <TableRow key={p.id} className="h-12">
+                    <TableRow key={p.id} className="h-[50px]">
                       <TableCell className="text-slate-500">{toDateStr(p.recordDate)}</TableCell>
                       <TableCell className={cn('font-medium tabular-nums', d.contractType === 1 ? 'text-green-600' : 'text-amber-600')}>
                         {d.contractType === 1 ? '+' : '-'}¥{formatMoney(p.amount)}
@@ -419,7 +419,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                 </TableHeader>
                 <TableBody>
                   {acceptances.map((a) => (
-                    <TableRow key={a.id} className="h-12">
+                    <TableRow key={a.id} className="h-[50px]">
                       <TableCell className="font-medium">{toDateStr(a.acceptDate)}</TableCell>
                       <TableCell>
                         {a.attachment ? (
@@ -483,7 +483,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                 </TableHeader>
                 <TableBody>
                   {contractFiles.map((f) => (
-                    <TableRow key={f.id} className="h-12">
+                    <TableRow key={f.id} className="h-[50px]">
                       <TableCell className="flex max-w-[300px] items-center gap-2 font-medium">
                         <FileText className="h-4 w-4 shrink-0 text-slate-400" />
                         <span className="truncate">{f.originalName}</span>
@@ -690,7 +690,7 @@ function InvoiceTable({ rows, canManage, onDelete }: {
         </TableHeader>
         <TableBody>
           {rows.map((inv) => (
-            <TableRow key={inv.id} className="h-12">
+            <TableRow key={inv.id} className="h-[50px]">
               <TableCell className="text-slate-500">{toDateStr(inv.issueDate)}</TableCell>
               <TableCell className="font-mono text-xs text-slate-600">
                 {inv.invoiceCode}{inv.invoiceNumber}
