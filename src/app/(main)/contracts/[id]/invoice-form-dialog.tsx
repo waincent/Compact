@@ -230,7 +230,7 @@ export function InvoiceFormDialog({ open, onOpenChange, onSaved, contractId }: P
                 value={form.watch('taxRate') ?? '13'}
                 onValueChange={(v) => form.setValue('taxRate', v ?? '13', { shouldValidate: true })}
               >
-                <SelectTrigger><SelectValue placeholder="选择税率" /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue placeholder="选择税率" /></SelectTrigger>
                 <SelectContent>
                   {['6', '9', '13'].map((r) => (
                     <SelectItem key={r} value={r}>{r}%</SelectItem>
