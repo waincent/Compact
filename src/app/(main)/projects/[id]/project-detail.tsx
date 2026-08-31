@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Pencil, FileText, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -169,12 +169,15 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
                   <TableHead>合同类型</TableHead>
                   <TableHead>甲方 / 乙方</TableHead>
                   <TableHead>金额</TableHead>
-                  <TableHead className="text-right">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {contracts.map((c) => (
-                  <TableRow key={c.id}>
+                  <TableRow
+                    key={c.id}
+                    onClick={() => router.push(`/contracts/${c.id}`)}
+                    className="cursor-pointer transition-colors hover:bg-slate-50"
+                  >
                     <TableCell className="font-mono text-xs text-slate-500">{c.code}</TableCell>
                     <TableCell className="font-medium">{c.name}</TableCell>
                     <TableCell><StatusBadge value={c.contractType} label={getLabel('contract_type', c.contractType)} /></TableCell>
@@ -182,11 +185,6 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
                       {c.partyA?.name} / {c.partyB?.name}
                     </TableCell>
                     <TableCell className="tabular-nums">¥{formatMoney(c.totalAmount)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="h-8 px-2" render={<Link href={`/contracts/${c.id}`} />}>
-                        <FileText className="h-3.5 w-3.5" /> 详情
-                      </Button>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
