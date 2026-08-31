@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, Trash2, FileText, Plus, CheckCircle2, Ban, Wallet, Pencil, FileCheck2,
-  ScrollText, Upload, Download, Loader2,
+  ScrollText, Upload, Download, Loader2, Check,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { Progress } from '@/components/ui/progress'
 import { StatusBadge } from '@/components/data-table/status-badge'
 import { EmptyState } from '@/components/data-table/empty-state'
 import { ConfirmDialog } from '@/components/data-table/confirm-dialog'
@@ -261,15 +260,15 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
   const d = detail
   const total = d.stats.total
 
-  const progressItem = (label: string, percent: number, amount: number, color: string) => (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-xs">
-        <span className="text-slate-500">{label}</span>
-        <span className="font-medium tabular-nums text-slate-700">
-          ¥{formatMoney(amount)} <span className="text-slate-400">/ {percent}%</span>
-        </span>
+  const progressItem = (label: string, percent: number, amount: number, stroke: string, text: string) => (
+    <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+      <ProgressRing percent={percent} stroke={stroke} text={text} />
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-slate-800">{label}</p>
+        <p className="mt-1 text-xs text-slate-500">
+          已完成 <span className="font-medium tabular-nums text-slate-700">¥{formatMoney(amount)}</span>
+        </p>
       </div>
-      <Progress value={percent} className={cn('h-2', color)} />
     </div>
   )
 
@@ -312,15 +311,13 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         </CardContent>
       </Card>
 
-      {/* 双进度条 */}
+      {/* 环形进度:资金方向由合同类型推导(销售=收款/开票、采购=付款/收票) */}
       <Card>
-        <CardContent className="grid gap-5 pt-5 md:grid-cols-2">
-          {/* 资金方向由合同类型推导:销售=收款、采购=付款 */}
-          {d.contractType === 1 && progressItem('收款进度', d.stats.receivePercent, d.stats.receive, 'bg-green-500')}
-          {d.contractType === 2 && progressItem('付款进度', d.stats.payPercent, d.stats.pay, 'bg-amber-500')}
-          {/* 发票销项/进项由合同类型推导:销售=开票、采购=收票 */}
-          {d.contractType === 1 && progressItem('开票进度', d.stats.invoiceOutPercent, d.stats.invoiceOut, 'bg-blue-500')}
-          {d.contractType === 2 && progressItem('收票进度', d.stats.invoiceInPercent, d.stats.invoiceIn, 'bg-violet-500')}
+        <CardContent className="grid gap-4 pt-5 md:grid-cols-2">
+          {d.contractType === 1 && progressItem('收款进度', d.stats.receivePercent, d.stats.receive, 'stroke-green-500', 'text-green-600')}
+          {d.contractType === 2 && progressItem('付款进度', d.stats.payPercent, d.stats.pay, 'stroke-amber-500', 'text-amber-600')}
+          {d.contractType === 1 && progressItem('开票进度', d.stats.invoiceOutPercent, d.stats.invoiceOut, 'stroke-blue-500', 'text-blue-600')}
+          {d.contractType === 2 && progressItem('收票进度', d.stats.invoiceInPercent, d.stats.invoiceIn, 'stroke-violet-500', 'text-violet-600')}
         </CardContent>
       </Card>
 
@@ -653,6 +650,39 @@ function InfoItem({ label, value, highlight }: { label: string; value: string; h
     <div>
       <p className="text-xs text-slate-400">{label}</p>
       <p className={cn('mt-0.5', highlight ? 'text-base font-semibold text-primary' : 'text-slate-700')}>{value}</p>
+    </div>
+  )
+}
+
+/** 圆形进度环:未完成时圆心显示百分比,100% 时圆心显示对勾 */
+function ProgressRing({ percent, stroke, text, size = 64 }: { percent: number; stroke: string; text: string; size?: number }) {
+  const pct = Math.max(0, Math.min(100, Math.round(percent)))
+  const r = (size - 10) / 2
+  const c = 2 * Math.PI * r
+  const done = pct >= 100
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={10} className="stroke-slate-200" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          strokeWidth={10}
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c - (c * pct) / 100}
+          className={`${stroke} transition-all duration-500`}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        {done ? (
+          <Check className={`h-6 w-6 ${text}`} strokeWidth={3} />
+        ) : (
+          <span className={`text-sm font-semibold tabular-nums ${text}`}>{pct}%</span>
+        )}
+      </div>
     </div>
   )
 }
