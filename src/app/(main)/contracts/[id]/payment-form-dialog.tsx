@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Upload, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -46,6 +46,8 @@ interface Props {
 export function PaymentFormDialog({ open, onOpenChange, onSaved, contractId }: Props) {
   const [contracts, setContracts] = useState<ContractOpt[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [voucherFile, setVoucherFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -58,6 +60,7 @@ export function PaymentFormDialog({ open, onOpenChange, onSaved, contractId }: P
         .get<{ list: ContractOpt[] }>('/api/contracts', { pageSize: 100 })
         .then((d) => setContracts(d.list))
         .catch(() => setContracts([]))
+      setVoucherFile(null)
       form.reset({
         contractId: contractId ? String(contractId) : '',
         amount: '',
@@ -74,12 +77,29 @@ export function PaymentFormDialog({ open, onOpenChange, onSaved, contractId }: P
   async function onSubmit(values: FormValues) {
     setSubmitting(true)
     try {
-      await api.post('/api/payments', {
+      const created = await api.post<{ id: number }>('/api/payments', {
         contractId: contractId ?? Number(values.contractId),
         amount: Number(values.amount),
         recordDate: values.recordDate,
       })
-      toast.success('资金记录已登记,状态为待确认')
+      let uploadErr: string | null = null
+      if (voucherFile) {
+        try {
+          const form = new FormData()
+          form.append('file', voucherFile)
+          const res = await fetch(`/api/upload?businessType=payment&businessId=${created.id}`, {
+            method: 'POST',
+            body: form,
+            cache: 'no-store',
+          })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data?.message ?? '凭证上传失败')
+        } catch (e) {
+          uploadErr = (e as Error).message
+        }
+      }
+      if (uploadErr) toast.error(`资金记录已登记,但凭证上传失败:${uploadErr}`)
+      else toast.success('资金记录已登记')
       onSaved()
     } catch (err) {
       toast.error((err as Error).message)
@@ -154,6 +174,38 @@ export function PaymentFormDialog({ open, onOpenChange, onSaved, contractId }: P
             {form.formState.errors.recordDate && (
               <p className="text-xs text-red-500">{form.formState.errors.recordDate.message}</p>
             )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>凭证图片(可选)</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) setVoucherFile(f)
+                e.target.value = ''
+              }}
+            />
+            {voucherFile ? (
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-input bg-slate-50 px-3 py-2">
+                <span className="flex min-w-0 items-center gap-2 text-sm text-slate-600">
+                  <ImageIcon className="h-4 w-4 shrink-0 text-slate-400" />
+                  <span className="truncate">{voucherFile.name}</span>
+                  <span className="shrink-0 text-xs text-slate-400">{(voucherFile.size / 1024).toFixed(0)} KB</span>
+                </span>
+                <Button type="button" variant="ghost" size="sm" className="h-7 w-7 shrink-0 px-0 text-slate-400" onClick={() => setVoucherFile(null)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4" /> 选择凭证图片
+              </Button>
+            )}
+            <p className="text-xs text-slate-500">支持图片格式,单个文件不超过 20MB</p>
           </div>
 
           <DialogFooter className="gap-2 pt-2">

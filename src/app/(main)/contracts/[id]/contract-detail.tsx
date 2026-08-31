@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'reac
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  ArrowLeft, Trash2, FileText, Plus, CheckCircle2, Ban, Wallet, Pencil, FileCheck2,
-  ScrollText, Upload, Download, Loader2, Check,
+  ArrowLeft, Trash2, FileText, Plus, Wallet, Pencil, FileCheck2,
+  ScrollText, Upload, Download, Loader2, Check, Image as ImageIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -45,8 +45,9 @@ interface ContractDetail {
 }
 
 interface PaymentRow {
-  id: number; amount: number; status: number
-  recordDate: string; createdByName?: string; voucherName?: string | null
+  id: number; amount: number
+  recordDate: string; createdByName?: string
+  voucherId?: number | null; voucherName?: string | null
 }
 interface InvoiceRow {
   id: number
@@ -81,7 +82,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
   canManageInvoice: boolean
 }) {
   const router = useRouter()
-  const { getLabel } = useDicts(['contract_type', 'payment_status', 'invoice_status'])
+  const { getLabel } = useDicts(['contract_type', 'invoice_status'])
   const [detail, setDetail] = useState<ContractDetail | null>(null)
   const [payments, setPayments] = useState<PaymentRow[]>([])
   const [invoices, setInvoices] = useState<InvoiceRow[]>([])
@@ -93,8 +94,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
   const [acceptanceOpen, setAcceptanceOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const [confirming, setConfirming] = useState<PaymentRow | null>(null)
-  const [voiding, setVoiding] = useState<PaymentRow | null>(null)
+  const [deletingPayment, setDeletingPayment] = useState<PaymentRow | null>(null)
   const [deleting, setDeleting] = useState<InvoiceRow | null>(null)
   const [deletingAcceptance, setDeletingAcceptance] = useState<AcceptanceRow | null>(null)
   const [contractFiles, setContractFiles] = useState<ContractFileRow[]>([])
@@ -200,28 +200,13 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
     }
   }
 
-  async function onConfirmPayment() {
-    if (!confirming) return
+  async function onDeletePayment() {
+    if (!deletingPayment) return
     setActionLoading(true)
     try {
-      await api.post(`/api/payments/${confirming.id}/confirm`)
-      toast.success('已确认到账')
-      setConfirming(null)
-      loadAll()
-    } catch (err) {
-      toast.error((err as Error).message)
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  async function onVoidPayment() {
-    if (!voiding) return
-    setActionLoading(true)
-    try {
-      await api.post(`/api/payments/${voiding.id}/void`)
-      toast.success('记录已作废')
-      setVoiding(null)
+      await api.del(`/api/payments/${deletingPayment.id}`)
+      toast.success('资金记录已删除')
+      setDeletingPayment(null)
       loadAll()
     } catch (err) {
       toast.error((err as Error).message)
@@ -372,7 +357,6 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                 <TableHeader>
                   <TableRow>
                     <TableHead>金额</TableHead>
-                    <TableHead>状态</TableHead>
                     <TableHead>发生日期</TableHead>
                     <TableHead>凭证</TableHead>
                     {canManagePayment && <TableHead className="text-right">操作</TableHead>}
@@ -384,23 +368,24 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
                       <TableCell className={cn('font-medium tabular-nums', d.contractType === 1 ? 'text-green-600' : 'text-amber-600')}>
                         {d.contractType === 1 ? '+' : '-'}¥{formatMoney(p.amount)}
                       </TableCell>
-                      <TableCell><StatusBadge value={p.status} label={getLabel('payment_status', p.status)} /></TableCell>
                       <TableCell className="text-slate-500">{toDateStr(p.recordDate)}</TableCell>
-                      <TableCell className="text-slate-500">{p.voucherName ?? '-'}</TableCell>
+                      <TableCell>
+                        {p.voucherId ? (
+                          <Button variant="ghost" size="sm" className="h-8 max-w-[200px] px-2 text-slate-600" render={
+                            <a href={`/api/files/${p.voucherId}`} target="_blank" rel="noreferrer" />
+                          }>
+                            <ImageIcon className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{p.voucherName}</span>
+                          </Button>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </TableCell>
                       {canManagePayment && (
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            {p.status === 1 && (
-                              <>
-                                <Button variant="ghost" size="sm" className="h-8 px-2 text-green-600" onClick={() => setConfirming(p)}>
-                                  <CheckCircle2 className="h-3.5 w-3.5" /> {d.contractType === 1 ? '确认到账' : '确认付款'}
-                                </Button>
-                                <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500" onClick={() => setVoiding(p)}>
-                                  <Ban className="h-3.5 w-3.5" /> 作废
-                                </Button>
-                              </>
-                            )}
-                          </div>
+                          <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600" onClick={() => setDeletingPayment(p)}>
+                            <Trash2 className="h-3.5 w-3.5" /> 删除
+                          </Button>
                         </TableCell>
                       )}
                     </TableRow>
@@ -587,25 +572,16 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         onConfirm={onDeleteContract}
       />
 
-      {/* 资金确认/作废、发票删除 */}
+      {/* 资金记录删除、发票删除 */}
       <ConfirmDialog
-        open={Boolean(confirming)}
-        onOpenChange={(o) => !o && setConfirming(null)}
-        title={d.contractType === 1 ? '确认到账' : '确认付款'}
-        description={confirming ? `确认这笔${d.contractType === 1 ? '收款' : '付款'} ¥${formatMoney(confirming.amount)} 已到账/完成吗?` : ''}
-        confirmText="确认"
-        loading={actionLoading}
-        onConfirm={onConfirmPayment}
-      />
-      <ConfirmDialog
-        open={Boolean(voiding)}
-        onOpenChange={(o) => !o && setVoiding(null)}
-        title="作废资金记录"
-        description={voiding ? `确定作废这笔¥${formatMoney(voiding.amount)}的资金记录吗?作废后不计入合同进度。` : ''}
-        confirmText="作废"
+        open={Boolean(deletingPayment)}
+        onOpenChange={(o) => !o && setDeletingPayment(null)}
+        title="删除资金记录"
+        description={deletingPayment ? `确定删除这笔 ¥${formatMoney(deletingPayment.amount)} 的资金记录吗?删除后不再计入合同进度,关联凭证一并删除。` : ''}
+        confirmText="删除"
         variant="danger"
         loading={actionLoading}
-        onConfirm={onVoidPayment}
+        onConfirm={onDeletePayment}
       />
       <ConfirmDialog
         open={Boolean(deleting)}

@@ -91,6 +91,39 @@ export const POST = withApi(async (req) => {
     })
   }
 
+  // 资金凭证:登记到资金记录的 voucherAttachmentId(已有凭证则先删除旧的,单记录单凭证)
+  if (parsed.data.businessType === 'payment') {
+    const payment = await prisma.paymentRecord.findFirst({
+      where: { id: parsed.data.businessId, isDeleted: false },
+    })
+    if (!payment) throw new ApiError(404, '资金记录不存在')
+    if (payment.voucherAttachmentId) {
+      await prisma.attachment.delete({ where: { id: payment.voucherAttachmentId } }).catch(() => {})
+    }
+    const attachment = await prisma.attachment.create({
+      data: {
+        businessType: 'payment',
+        businessId: payment.id,
+        fileName: stored.fileName,
+        filePath: stored.filePath,
+        fileSize: stored.fileSize,
+        mimeType: stored.mimeType,
+        originalName: stored.originalName,
+        createdBy: user.id,
+      },
+    })
+    await prisma.paymentRecord.update({
+      where: { id: payment.id },
+      data: { voucherAttachmentId: attachment.id, version: { increment: 1 } },
+    })
+    return ok({
+      id: attachment.id,
+      originalName: stored.originalName,
+      fileSize: stored.fileSize,
+      mimeType: stored.mimeType,
+    })
+  }
+
   // 合同原件:合同级多文件附件(单个合同可多份,不替换旧文件;仅管理员/财务可传)
   if (parsed.data.businessType === 'contract') {
     const roleUser = await requireRole([ROLE.SUPER_ADMIN, ROLE.ADMIN, ROLE.FINANCE])

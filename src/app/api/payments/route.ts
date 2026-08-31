@@ -110,7 +110,7 @@ export const POST = withApi(async (req) => {
       data: {
         contractId: contract.id,
         amount,
-        status: 1, // 待确认
+        status: 2, // 直接计入完成(不再有待确认流程)
         recordDate: new Date(data.recordDate),
         voucherAttachmentId: data.voucherAttachmentId ?? null,
         createdBy: user.id,
