@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Pencil, FileText } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, Plus, Pencil, FileText, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/data-table/status-badge'
 import { EmptyState } from '@/components/data-table/empty-state'
+import { ConfirmDialog } from '@/components/data-table/confirm-dialog'
 import { ProjectFormDialog } from '../project-form-dialog'
 import { ContractFormDialog } from '../../contracts/contract-form-dialog'
 import { useDicts } from '@/hooks/use-dicts'
@@ -40,12 +42,15 @@ interface ContractRow {
 }
 
 export function ProjectDetail({ projectId, canManage, companyId }: { projectId: number; canManage: boolean; companyId: number | null }) {
+  const router = useRouter()
   const { getLabel } = useDicts(['project_status', 'contract_type'])
   const [project, setProject] = useState<ProjectDetail | null>(null)
   const [contracts, setContracts] = useState<ContractRow[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [contractFormOpen, setContractFormOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -67,6 +72,20 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
     load()
   }, [load])
 
+  async function onDelete() {
+    if (!project) return
+    setDeleteLoading(true)
+    try {
+      await api.del(`/api/projects/${project.id}`)
+      toast.success('项目已删除')
+      router.push('/projects')
+    } catch (err) {
+      toast.error((err as Error).message)
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -85,9 +104,14 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
           <ArrowLeft className="h-4 w-4" /> 返回项目列表
         </Link>
         {canManage && (
-          <Button size="sm" variant="outline" onClick={() => setFormOpen(true)}>
-            <Pencil className="h-4 w-4" /> 编辑项目
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setFormOpen(true)}>
+              <Pencil className="h-4 w-4" /> 编辑项目
+            </Button>
+            <Button size="sm" variant="outline" className="text-red-600 hover:text-red-600" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="h-4 w-4" /> 删除项目
+            </Button>
+          </div>
         )}
       </div>
 
@@ -189,6 +213,17 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
           setContractFormOpen(false)
           load()
         }}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        variant="danger"
+        title="删除项目"
+        description={`确定删除项目「${project.name}」?删除后不可恢复。`}
+        confirmText="删除"
+        loading={deleteLoading}
+        onConfirm={onDelete}
       />
     </div>
   )

@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Plus, Pencil, Search, Trash2, FolderKanban } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Plus, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PaginationBar } from '@/components/data-table/pagination-bar'
 import { EmptyState } from '@/components/data-table/empty-state'
 import { StatusBadge } from '@/components/data-table/status-badge'
-import { ConfirmDialog } from '@/components/data-table/confirm-dialog'
 import { ProjectFormDialog } from './project-form-dialog'
 import { useDicts } from '@/hooks/use-dicts'
 import { api } from '@/lib/api-client'
@@ -33,6 +32,7 @@ interface Project {
 }
 
 export function ProjectsClient({ canManage, companyId }: { canManage: boolean; companyId: number | null }) {
+  const router = useRouter()
   const { getLabel, options } = useDicts(['project_status'])
   const [list, setList] = useState<Project[]>([])
   const [total, setTotal] = useState(0)
@@ -43,8 +43,6 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
   const [statusTab, setStatusTab] = useState<number | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
-  const [deleting, setDeleting] = useState<Project | null>(null)
-  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -67,21 +65,6 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
   useEffect(() => {
     load()
   }, [load])
-
-  async function onDelete() {
-    if (!deleting) return
-    setDeleteLoading(true)
-    try {
-      await api.del(`/api/projects/${deleting.id}`)
-      toast.success('项目已删除')
-      setDeleting(null)
-      load()
-    } catch (err) {
-      toast.error((err as Error).message)
-    } finally {
-      setDeleteLoading(false)
-    }
-  }
 
   const statusTabs = options('project_status')
 
@@ -155,17 +138,18 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
                 <TableHead>状态</TableHead>
                 <TableHead>起止日期</TableHead>
                 <TableHead>合同数</TableHead>
-                <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {list.map((p) => (
-                <TableRow key={p.id} className="group">
+                <TableRow
+                  key={p.id}
+                  onClick={() => router.push(`/projects/${p.id}`)}
+                  className="cursor-pointer transition-colors hover:bg-slate-50"
+                >
                   <TableCell className="font-mono text-xs text-slate-500">{p.code}</TableCell>
                   <TableCell>
-                    <Link href={`/projects/${p.id}`} className="font-medium text-slate-800 hover:text-primary">
-                      {p.name}
-                    </Link>
+                    <span className="font-medium text-slate-800">{p.name}</span>
                   </TableCell>
                   <TableCell>
                     <StatusBadge value={p.status} label={getLabel('project_status', p.status)} />
@@ -174,41 +158,6 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
                     {toDateStr(p.startDate)} ~ {toDateStr(p.endDate)}
                   </TableCell>
                   <TableCell>{p._count?.contracts ?? 0}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2"
-                        render={<Link href={`/projects/${p.id}`} />}
-                      >
-                        <FolderKanban className="h-3.5 w-3.5" /> 详情
-                      </Button>
-                      {canManage && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2 text-primary"
-                          onClick={() => {
-                            setEditing(p)
-                            setFormOpen(true)
-                          }}
-                        >
-                          <Pencil className="h-3.5 w-3.5" /> 编辑
-                        </Button>
-                      )}
-                      {canManage && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2 text-red-500 hover:text-red-600"
-                          onClick={() => setDeleting(p)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" /> 删除
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -238,17 +187,6 @@ export function ProjectsClient({ canManage, companyId }: { canManage: boolean; c
           setPage(1)
           load()
         }}
-      />
-
-      <ConfirmDialog
-        open={Boolean(deleting)}
-        onOpenChange={(o) => !o && setDeleting(null)}
-        title="删除项目"
-        description={deleting ? `确定删除项目「${deleting.name}」吗?删除后不可恢复。` : ''}
-        confirmText="删除"
-        variant="danger"
-        loading={deleteLoading}
-        onConfirm={onDelete}
       />
     </div>
   )
