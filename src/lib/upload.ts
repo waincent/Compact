@@ -60,7 +60,9 @@ export async function saveUpload(file: File): Promise<StoredFile> {
   const relPath = `${yyyy}/${mm}/${dd}/${diskName}`
 
   const root = process.env.UPLOAD_DIR ?? './uploads'
-  const absDir = path.join(process.cwd(), root, `${yyyy}/${mm}/${dd}`)
+  // UPLOAD_DIR 可能是相对(cwd 下)或绝对路径(容器内挂载点),统一解析到基准目录
+  const base = path.isAbsolute(root) ? root : path.join(process.cwd(), root)
+  const absDir = path.join(base, `${yyyy}/${mm}/${dd}`)
   await fs.mkdir(absDir, { recursive: true })
   await fs.writeFile(path.join(absDir, diskName), buffer)
 
@@ -76,9 +78,10 @@ export async function saveUpload(file: File): Promise<StoredFile> {
 /** 读取磁盘文件的绝对路径(校验路径安全,防路径穿越) */
 export async function resolveUploadPath(relPath: string): Promise<string> {
   const root = process.env.UPLOAD_DIR ?? './uploads'
-  // 上传目录由环境变量指定,体积小;turbopackIgnore 避免整个项目被追踪打包
-  const abs = path.join(/*turbopackIgnore: true*/ process.cwd(), root, relPath)
-  const normalizedRoot = path.resolve(/*turbopackIgnore: true*/ path.join(process.cwd(), root))
+  // 与 saveUpload 一致:UPLOAD_DIR 可能是相对或绝对路径,统一解析到基准目录
+  const base = path.isAbsolute(root) ? root : path.join(/*turbopackIgnore: true*/ process.cwd(), root)
+  const abs = path.join(/*turbopackIgnore: true*/ base, relPath)
+  const normalizedRoot = path.resolve(/*turbopackIgnore: true*/ base)
   if (!abs.startsWith(normalizedRoot + path.sep)) {
     throw new ApiError(400, '非法文件路径')
   }

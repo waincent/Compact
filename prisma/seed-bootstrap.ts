@@ -7,8 +7,12 @@
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma/client'
 import bcrypt from 'bcryptjs'
+import { existsSync } from 'node:fs'
 
-process.loadEnvFile?.('.env')
+// 本地开发从 .env 读 DATABASE_URL;容器运行时由 compose 环境变量注入,无 .env 文件则跳过
+if (existsSync('.env')) {
+  process.loadEnvFile('.env')
+}
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })

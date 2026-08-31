@@ -83,12 +83,13 @@ pnpm dev
 cd deploy
 cp .env.example .env
 #   修改 .env:JWT_SECRET(openssl rand -hex 32)、DB_PASSWORD、APP_PORT(对外端口)、UPLOAD_HOST_DIR(宿主上传目录)
+#   可选:COOKIE_SECURE=true —— 仅当对外已接入 HTTPS 时设置(纯 http 部署保持默认关闭,否则浏览器拒绝 Secure cookie 导致登录态丢失)
 
 # 2. 构建并启动(启动时自动执行数据库迁移)
 docker compose up -d --build
 
 # 3. 初始化平台超管 admin(幂等,仅首次执行)
-docker compose exec app pnpm exec tsx prisma/seed-bootstrap.ts
+docker compose exec app node_modules/.bin/tsx prisma/seed-bootstrap.ts
 
 # 4. 查看日志 / 停止
 docker compose logs -f app

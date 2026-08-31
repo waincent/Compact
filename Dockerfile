@@ -15,7 +15,10 @@ RUN corepack enable && corepack prepare pnpm@11.23.0 --activate \
     && pnpm config set fetch-retries 5 \
     && pnpm config set fetch-retry-mintimeout 20000 \
     && pnpm config set network-concurrency 4
-COPY package.json pnpm-lock.yaml ./
+# pnpm-workspace.yaml 携带 allowBuilds 允许列表(pnpm 11 忽略 package.json 的
+# onlyBuiltDependencies),@prisma/engines / esbuild / prisma 的构建脚本必须允许运行,
+# 否则 esbuild 二进制不落地,后续 next build 必挂。
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # --mount=type=cache 让 pnpm store 跨构建持久化,失败重试不重下
 RUN --mount=type=cache,target=/pnpm/store pnpm install --frozen-lockfile
 

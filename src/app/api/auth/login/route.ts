@@ -79,7 +79,9 @@ export const POST = withApi(async (req) => {
   store.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    // 纯 http 部署下 Secure cookie 会被浏览器拒绝(登录态丢失);
+    // 仅当显式设置 COOKIE_SECURE=true(接入 HTTPS 后)才启用 Secure 标记
+    secure: process.env.COOKIE_SECURE === 'true',
     path: '/',
     maxAge: remember ? REMEMBER_ME_SECONDS : SESSION_SECONDS,
   })
