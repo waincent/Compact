@@ -198,10 +198,6 @@ function LoginContent() {
             </Button>
           </form>
         </div>
-
-        <p className="mt-6 text-center text-xs text-slate-400">
-          演示账号: admin / manager1 / finance1 / member1,密码均 admin123
-        </p>
       </div>
     </div>
   )
