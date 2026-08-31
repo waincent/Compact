@@ -323,7 +323,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         </TabsList>
 
         <TabsContent value="invoices">
-          <div className="flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <div />
             {canManageInvoice && (
               <Button size="sm" onClick={() => setInvoiceOpen(true)}>
@@ -339,7 +339,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         </TabsContent>
 
         <TabsContent value="payments">
-          <div className="flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <div />
             {canManagePayment && (
               <Button size="sm" onClick={() => setRecordOpen(true)}>
@@ -395,7 +395,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         </TabsContent>
 
         <TabsContent value="acceptances">
-          <div className="flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <div />
             {canUpload && (
               <Button size="sm" onClick={() => setAcceptanceOpen(true)}>
@@ -451,7 +451,7 @@ export function ContractDetail({ contractId, companyId, canManage, canUpload, ca
         </TabsContent>
 
         <TabsContent value="contractFiles">
-          <div className="flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <div />
             {canUpload && (
               <Button size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
