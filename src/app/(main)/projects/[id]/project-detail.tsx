@@ -170,7 +170,8 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
                   <TableHead>合同类型</TableHead>
                   <TableHead>合同编号</TableHead>
                   <TableHead>合同名称</TableHead>
-                  <TableHead>甲方 / 乙方</TableHead>
+                  <TableHead>甲方</TableHead>
+                  <TableHead>乙方</TableHead>
                   <TableHead>金额</TableHead>
                 </TableRow>
               </TableHeader>
@@ -184,9 +185,8 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
                     <TableCell><StatusBadge value={c.contractType} label={getLabel('contract_type', c.contractType)} /></TableCell>
                     <TableCell className="font-mono text-xs text-slate-500">{c.code}</TableCell>
                     <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell className="max-w-[200px] truncate text-xs text-slate-500">
-                      {c.partyA?.name} / {c.partyB?.name}
-                    </TableCell>
+                    <TableCell className="max-w-[180px] truncate text-xs text-slate-500">{c.partyA?.name ?? '-'}</TableCell>
+                    <TableCell className="max-w-[180px] truncate text-xs text-slate-500">{c.partyB?.name ?? '-'}</TableCell>
                     <TableCell className="tabular-nums">¥{formatMoney(c.totalAmount)}</TableCell>
                   </TableRow>
                 ))}
