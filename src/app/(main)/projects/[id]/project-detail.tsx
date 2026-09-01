@@ -167,9 +167,9 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>合同类型</TableHead>
                   <TableHead>合同编号</TableHead>
                   <TableHead>合同名称</TableHead>
-                  <TableHead>合同类型</TableHead>
                   <TableHead>甲方 / 乙方</TableHead>
                   <TableHead>金额</TableHead>
                 </TableRow>
@@ -181,9 +181,9 @@ export function ProjectDetail({ projectId, canManage, companyId }: { projectId: 
                     onClick={() => router.push(`/contracts/${c.id}`)}
                     className="h-14 cursor-pointer transition-colors hover:bg-white/40"
                   >
+                    <TableCell><StatusBadge value={c.contractType} label={getLabel('contract_type', c.contractType)} /></TableCell>
                     <TableCell className="font-mono text-xs text-slate-500">{c.code}</TableCell>
                     <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell><StatusBadge value={c.contractType} label={getLabel('contract_type', c.contractType)} /></TableCell>
                     <TableCell className="max-w-[200px] truncate text-xs text-slate-500">
                       {c.partyA?.name} / {c.partyB?.name}
                     </TableCell>
