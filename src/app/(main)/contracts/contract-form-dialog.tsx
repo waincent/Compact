@@ -165,7 +165,7 @@ export function ContractFormDialog({ open, onOpenChange, onSaved, projectId, edi
                 value={form.watch('projectId') ?? ''}
                 onValueChange={(v) => form.setValue('projectId', v ?? '', { shouldValidate: true })}
               >
-                <SelectTrigger><SelectValue placeholder="选择项目" /></SelectTrigger>
+                <SelectTrigger className="w-full!"><SelectValue placeholder="选择项目" /></SelectTrigger>
                 <SelectContent>
                   {projects.map((p) => (
                     <SelectItem key={p.id} value={String(p.id)}>
@@ -199,7 +199,7 @@ export function ContractFormDialog({ open, onOpenChange, onSaved, projectId, edi
                 value={form.watch('partyAId') ?? ''}
                 onValueChange={(v) => form.setValue('partyAId', v ?? '', { shouldValidate: true })}
               >
-                <SelectTrigger><SelectValue placeholder="选择甲方" /></SelectTrigger>
+                <SelectTrigger className="w-full!"><SelectValue placeholder="选择甲方" /></SelectTrigger>
                 <SelectContent>
                   {companies.map((c) => (
                     <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
@@ -218,7 +218,7 @@ export function ContractFormDialog({ open, onOpenChange, onSaved, projectId, edi
                 value={form.watch('partyBId') ?? ''}
                 onValueChange={(v) => form.setValue('partyBId', v ?? '', { shouldValidate: true })}
               >
-                <SelectTrigger><SelectValue placeholder="选择乙方" /></SelectTrigger>
+                <SelectTrigger className="w-full!"><SelectValue placeholder="选择乙方" /></SelectTrigger>
                 <SelectContent>
                   {companies.map((c) => (
                     <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
@@ -240,7 +240,7 @@ export function ContractFormDialog({ open, onOpenChange, onSaved, projectId, edi
                 value={form.watch('contractType') ?? ''}
                 onValueChange={(v) => form.setValue('contractType', v ?? '1', { shouldValidate: true })}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full!"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">销售</SelectItem>
                   <SelectItem value="2">采购</SelectItem>
