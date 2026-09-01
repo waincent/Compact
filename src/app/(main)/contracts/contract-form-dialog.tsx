@@ -153,16 +153,6 @@ export function ContractFormDialog({ open, onOpenChange, onSaved, projectId, edi
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="name">
-              合同名称 <span className="text-red-500">*</span>
-            </Label>
-            <Input id="name" {...form.register('name')} placeholder="如:智慧城市平台开发合同" />
-            {form.formState.errors.name && (
-              <p className="text-xs text-red-500">{form.formState.errors.name.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
             <Label>
               所属项目 <span className="text-red-500">*</span>
             </Label>
@@ -187,6 +177,16 @@ export function ContractFormDialog({ open, onOpenChange, onSaved, projectId, edi
             )}
             {form.formState.errors.projectId && (
               <p className="text-xs text-red-500">{form.formState.errors.projectId.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="name">
+              合同名称 <span className="text-red-500">*</span>
+            </Label>
+            <Input id="name" {...form.register('name')} placeholder="如:智慧城市平台开发合同" />
+            {form.formState.errors.name && (
+              <p className="text-xs text-red-500">{form.formState.errors.name.message}</p>
             )}
           </div>
 
